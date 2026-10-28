@@ -1,35 +1,40 @@
-import { Link, useSearchParams } from "react-router"
+import { Link, Navigate, useSearchParams } from "react-router"
 import ShowPromise from "../components/showPromise"
-import PageHeader from "../components/PageHeader"
-import EmptyState from "../components/EmptyState"
-import { buttonClass } from "../components/form/styles"
 import { useGetFavoritesQuery } from "../store/api/favoriteApi"
-import { toPositiveInt } from "../hooks/useRecipeFilters"
 import RecipeList from "../recipe/show"
 import Paging from "../recipe/paging"
 
+// למועדפים אין סינון - רק עמודים
 const FavoritePage = () => {
     const [searchParams] = useSearchParams()
-    const page = toPositiveInt(searchParams.get("page")) ?? 1
+    const pageParam = searchParams.get("page")
+    const page = pageParam ? Number(pageParam) : 1
 
+    // isLoading - רק בטעינה הראשונה. isFetching - בכל בקשה, גם במעבר עמוד
     const { data, isLoading, isFetching, isError, error } = useGetFavoritesQuery({ page })
     const recipes = data?.items
     const isSearching = isFetching && !isLoading
 
+    // הסרתי את המתכון האחרון בעמוד האחרון - העמוד כבר לא קיים, עוברים לעמוד שלפניו
+    const totalPages = data?.pagination.totalPages ?? 0
+    if (data && totalPages > 0 && page > totalPages) {
+        const next = new URLSearchParams(searchParams)
+        next.set("page", String(totalPages))
+        return <Navigate to={`?${next}`} replace />
+    }
+
     return (<>
-        <PageHeader icon="❤️" title="המועדפים שלי"
-            subtitle={data && data.pagination.total > 0 ? `${data.pagination.total} מתכונים שאהבת, מהאחרון שנשמר` : "כל המתכונים שסימנת בלב"} />
+        <h2>המועדפים שלי</h2>
         <ShowPromise isLoading={isLoading} isError={isError} eror={error} />
 
-        <div aria-live="polite">
-            {isSearching && <p className="mb-4 text-center text-sm text-cocoa">טוען...</p>}
-            {!isFetching && data?.pagination.total === 0 &&
-                <EmptyState icon="🤍" title="עדיין אין מתכונים במועדפים">
-                    <p>מצאת מתכון שאהבת? לחיצה על הלב תשמור אותו כאן.</p>
-                    <Link to="/recipes" className={`${buttonClass("primary")} mt-5`}>למתכונים המשותפים ←</Link>
-                </EmptyState>}
-        </div>
+        {/* aria-live - קורא מסך יקריא את ההודעה כשהיא מופיעה */}
+        <p aria-live="polite">
+            {isSearching && "טוען..."}
+            {!isFetching && recipes?.length === 0 &&
+                <>עדיין אין מתכונים במועדפים. <Link to="/recipes">לכל המתכונים</Link></>}
+        </p>
 
+        {/* לחיצה על הלב כאן מסירה מהמועדפים - הרשימה נטענת מחדש והמתכון נעלם */}
         <RecipeList recipes={recipes} isSearching={isSearching} />
         {data && <Paging pagination={data.pagination} />}
     </>)

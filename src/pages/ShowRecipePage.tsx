@@ -3,49 +3,53 @@ import { useDeleteRecipeMutation, useGetRecipeQuery } from "../store/api/recipeS
 import RecipeItem from "../recipe/recipeItem";
 import ShowPromise from "../components/showPromise";
 import FavoriteButton from "../recipe/FavoriteButton";
-import { buttonClass } from "../components/form/styles";
-import { useAppDispatch } from "../store/hook"
-import { showToast } from "../store/state/toastSlice"
 
-const ShowRecipePage = () => {
+const ShowRecipePage = ()=>{
+    // id מהכתובת הוא מחרוזת - הופכים למספר
     const id = Number(useParams().id)
+    // ה-hook מחזיר אובייקט - המתכון עצמו נמצא ב-data
     const { data: recipe, isLoading, isError, error } = useGetRecipeQuery(id);
     const [deleteFn, { isLoading: isDeleting, isError: isDeleteError, error: deleteError }] = useDeleteRecipeMutation()
     const nav = useNavigate()
-    const dispatch = useAppDispatch()
 
+    // הרשימה שולחת ב-state את הכתובת שממנה הגיעו (כולל סינון ועמוד)
+    // כניסה ישירה מקישור או רענון - אין state, אז חוזרים לכל המתכונים
     const location = useLocation()
     const from: string = location.state?.from ?? "/recipes"
     const backText = from.startsWith("/my-recipes") ? "חזרה למתכונים שלי"
         : from.startsWith("/favorites") ? "חזרה למועדפים"
-            : "חזרה למתכונים המשותפים"
+        : "חזרה לרשימת המתכונים"
 
     const onDelete = async () => {
+        // מחיקה אי אפשר לבטל - מבקשים אישור
         if (!window.confirm("למחוק את המתכון? אי אפשר לבטל את הפעולה.")) return
         try {
             await deleteFn(id).unwrap()
-            dispatch(showToast("המתכון נמחק בהצלחה"))
+            // המתכון כבר לא קיים - חוזרים לרשימה שממנה הגיעו. הרשימה תתעדכן לבד (invalidatesTags)
             nav(from)
         }
         catch {
+            // השגיאה מוצגת ב-ShowPromise למטה
         }
     }
 
     return (<>
-        <Link to={from} className={`${buttonClass("ghost", "sm")} mb-5`}>→ {backText}</Link>
         <ShowPromise isLoading={isLoading} isError={isError} eror={error} />
-        <div className="mb-4"><ShowPromise isLoading={false} isError={isDeleteError} eror={deleteError} /></div>
-        {recipe && (
-            <RecipeItem recipe={recipe} actions={<>
-                <FavoriteButton recipeId={recipe.id} isFavorite={recipe.isFavorite} withLabel />
-                {recipe.canEdit && <Link to={`/recipes/${id}/edit`} state={location.state} className={buttonClass("secondary")}>✏️ עריכה</Link>}
-                {recipe.canDelete && (
-                    <button type="button" onClick={onDelete} disabled={isDeleting} className={buttonClass("danger")}>
-                        🗑 {isDeleting ? "מוחק..." : "מחיקה"}
-                    </button>
-                )}
-            </>} />
+        {/* data הוא undefined עד שהתשובה מגיעה */}
+        {recipe && <RecipeItem recipe={recipe}></RecipeItem>}
+        {recipe && <FavoriteButton recipeId={recipe.id} isFavorite={recipe.isFavorite} />}
+
+        {/* השרת מחליט מי רשאי - canEdit רק ליוצרת, canDelete גם למנהל על מתכון ציבורי */}
+        {/* state - כדי שאחרי העריכה "חזרה" עדיין יוביל לרשימה המקורית */}
+        {recipe?.canEdit && <Link to={`/recipes/${id}/edit`} state={location.state}>עריכה</Link>}
+        {recipe?.canDelete && (
+            <button type="button" onClick={onDelete} disabled={isDeleting}>
+                {isDeleting ? "מוחק..." : "מחיקה"}
+            </button>
         )}
+        <ShowPromise isLoading={false} isError={isDeleteError} eror={deleteError} />
+
+        <Link to={from}>{backText}</Link>
     </>)
 }
 export default ShowRecipePage;

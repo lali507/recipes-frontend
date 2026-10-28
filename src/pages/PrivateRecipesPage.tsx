@@ -1,47 +1,43 @@
 import { Link, useSearchParams } from "react-router"
 import ShowPromise from "../components/showPromise"
-import PageHeader from "../components/PageHeader"
-import EmptyState from "../components/EmptyState"
-import { buttonClass } from "../components/form/styles"
 import { useGetMyRecipesQuery } from "../store/api/recipeSlice"
 import useRecipeFilters from "../hooks/useRecipeFilters"
 import RecipeFiltersBar from "../recipe/RecipeFilters"
 import RecipeList from "../recipe/show"
 import Paging from "../recipe/paging"
-import VisibilityBadge from "../recipe/VisibilityBadge"
 
+// כמו PublicRecipesPage - רק השאילתה שונה: /recipes/mine מחזיר את המתכונים שלי (ציבוריים ופרטיים)
 const PrivateRecipesPage = () => {
+    // הסינון נבנה מה-URL ב-hook משותף לשני הדפים
     const filters = useRecipeFilters()
 
+    // isPublic קיים רק כאן, לכן הוא לא ב-hook המשותף
+    // ב-URL זה "true"/"false", והשרת צריך boolean. בלי פרמטר = undefined = הכול
     const [searchParams] = useSearchParams()
     const isPublicParam = searchParams.get("isPublic")
     const isPublic = isPublicParam ? isPublicParam === "true" : undefined
 
+    // isLoading - רק בטעינה הראשונה. isFetching - בכל בקשה, גם כשמשנים סינון או עמוד
     const { data, isLoading, isFetching, isError, error } = useGetMyRecipesQuery({ ...filters, isPublic })
+    // data הוא undefined עד שהתשובה מגיעה, לכן ?.
     const recipes = data?.items
+    // חיפוש חוזר: יש כבר תוצאות ישנות על המסך, והחדשות עוד לא הגיעו
     const isSearching = isFetching && !isLoading
     const search = filters.search
-    const hasFilters = [...searchParams.keys()].some((key) => key !== "page")
 
     return (<>
-        <PageHeader icon="📒" title="המתכונים שלי"
-            subtitle={<span className="flex flex-wrap items-center gap-1.5">
-                ליד כל מתכון מסומן מי יכול לראות אותו: <VisibilityBadge isPublic /> כל המשתמשים,
-                <VisibilityBadge isPublic={false} /> רק את.
-            </span>}
-            actions={<Link to="/recipes/new" className={buttonClass("primary")}>+ מתכון חדש</Link>} />
+        <h2>המתכונים שלי</h2>
+        <Link to="/recipes/new">+ מתכון חדש</Link>
         <RecipeFiltersBar showVisibility />
         <ShowPromise isLoading={isLoading} isError={isError} eror={error} />
 
-        <div aria-live="polite">
-            {isSearching && <p className="mb-4 text-center text-sm text-cocoa">מחפש...</p>}
-            {!isFetching && data?.pagination.total === 0 &&
-                (search ? <EmptyState icon="🔍" title={`לא נמצאו מתכונים עבור "${search}"`}>אפשר לנסות מילה אחרת</EmptyState>
-                    : hasFilters ? <EmptyState icon="🧐" title="לא נמצאו מתכונים שמתאימים לסינון">אפשר לשנות או לנקות את הסינון</EmptyState>
-                        : <EmptyState icon="📝" title="עדיין לא הוספת מתכונים">
-                            <Link to="/recipes/new" className={`${buttonClass("primary")} mt-3`}>להוספת המתכון הראשון</Link>
-                        </EmptyState>)}
-        </div>
+        {/* aria-live - קורא מסך יקריא את ההודעה כשהיא מופיעה */}
+        <p aria-live="polite">
+            {isSearching && "מחפש..."}
+            {/* רק אחרי שהתשובה הגיעה - אחרת "לא נמצאו" יהבהב בזמן החיפוש */}
+            {!isFetching && recipes?.length === 0 &&
+                (search ? `לא נמצאו מתכונים עבור "${search}"` : <>עדיין לא הוספת מתכונים. <Link to="/recipes/new">להוספת המתכון הראשון</Link></>)}
+        </p>
 
         <RecipeList recipes={recipes} isSearching={isSearching} />
         {data && <Paging pagination={data.pagination} />}

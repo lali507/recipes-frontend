@@ -20,14 +20,16 @@ const routes = createBrowserRouter([
         path: "/",
         element: <App />,
         children: [
+            // אורח - בלי token
             { index: true, element: <HomePage /> },
             { path: "login", element: <LoginPage /> },
             { path: "register", element: <RegisterPage /> },
 
+            // מחובר - בלי path, רק בודק הרשאה
             {
                 element: <Protected roles={["USER", "ADMIN"]} />,
                 children: [
-
+                    
                     { path: "recipes", element: <PublicRecipesPage /> },
                     { path: "recipes/new", element: <AddRecipePage /> },
                     { path: "recipes/:id", element: <ShowRecipePage /> },
@@ -37,6 +39,7 @@ const routes = createBrowserRouter([
                 ]
             },
 
+            // מנהל בלבד
             {
                 element: <Protected roles={["ADMIN"]} />,
                 children: [
