@@ -3,12 +3,9 @@ import { useAddFavoriteMutation, useRemoveFavoriteMutation } from "../store/api/
 
 interface FavoriteButtonProps {
   recipeId: number
-  // מגיע מהשרת בכל מתכון
   isFavorite: boolean
 }
 
-// כפתור "לב": לא במועדפים ← POST, במועדפים ← DELETE
-// אחרי הצלחה הרשימות נטענות מחדש (invalidatesTags), ו-isFavorite מגיע מעודכן מהשרת
 const FavoriteButton = ({ recipeId, isFavorite }: FavoriteButtonProps) => {
   const [addFn, { isLoading: isAdding }] = useAddFavoriteMutation()
   const [removeFn, { isLoading: isRemoving }] = useRemoveFavoriteMutation()
@@ -26,16 +23,13 @@ const FavoriteButton = ({ recipeId, isFavorite }: FavoriteButtonProps) => {
     }
   }
 
-  // title - הודעה קטנה שמופיעה כשמעבירים את העכבר מעל הלב
   const hint = isFavorite ? "מתכון שאהבתי - שמור במועדפים. לחיצה תסיר אותו" : "אהבת? לחיצה על הלב תשמור את המתכון במועדפים"
 
   return (<>
     <button
       type="button"
       onClick={toggle}
-      // חוסם לחיצה כפולה בזמן שהבקשה בדרך
       disabled={isBusy}
-      // aria-pressed - קורא מסך יודע אם הכפתור "דלוק"
       aria-pressed={isFavorite}
       aria-label={isFavorite ? "הסרה מהמועדפים" : "הוספה למועדפים"}
       title={hint}

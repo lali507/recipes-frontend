@@ -6,11 +6,10 @@ import ForbiddenPage from "../pages/ForbiddenPage"
 
 
 const Protected = ({ roles }: { roles: userResponse["role"][] }) => {
-    
+
     const user = useAppSelector(selectUser)
     const location = useLocation()
 
-    // state.from - אחרי ההתחברות חוזרים לדף שביקשו (למשל כשפג תוקף באמצע גלישה)
     if (!user)
         return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />
 

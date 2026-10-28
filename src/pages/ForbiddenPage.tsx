@@ -1,6 +1,5 @@
 import { Link } from "react-router"
 
-// מוצג כשמשתמשת מחוברת נכנסת לדף שהתפקיד שלה לא מורשה אליו (403)
 const ForbiddenPage = ()=>{
     return <div>
         <h1>אין הרשאה</h1>

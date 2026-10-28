@@ -3,7 +3,6 @@ import { Link } from "react-router"
 import { useAppSelector } from "../store/hook"
 import { selectUser } from "../store/state/userSlice"
 
-// צבעים תואמים ללוגו
 const colors = {
     primary: "#E8452C",
     secondary: "#FF9A3C",
@@ -40,7 +39,6 @@ const HomePage = () => {
     return (
         <main dir="rtl" style={{ color: colors.text, padding: "0 16px 48px" }}>
 
-            {/* פתיחה */}
             <section style={{
                 margin: "24px 0 48px",
                 padding: "56px 24px",
@@ -65,7 +63,6 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* מה יש באתר */}
             <section style={{ marginBottom: 56 }}>
                 <h2>מה מחכה לך כאן</h2>
                 <div style={{
@@ -93,7 +90,6 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* איך זה עובד */}
             <section style={{ marginBottom: 56 }}>
                 <h2>איך זה עובד?</h2>
                 <div style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap", marginTop: 24 }}>
@@ -112,7 +108,6 @@ const HomePage = () => {
                 </div>
             </section>
 
-            {/* סיום - רק לאורחת */}
             {!user && (
                 <section style={{
                     padding: "40px 24px",

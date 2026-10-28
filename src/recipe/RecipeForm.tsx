@@ -8,11 +8,10 @@ import type { errResponse } from "../types/eror";
 import FormField from "../components/form/formField";
 import MyButton from "../components/form/Button";
 
-// הכללים זהים לשרת (FRONTEND-API-GUIDE סעיף 6) - אותה סכמה להוספה ולעריכה
 const schema = yup.object({
   title: yup
     .string()
-    .trim() // השרת מוחק רווחים - בלי trim, "   " היה עובר את required
+    .trim()
     .required("שם המתכון הוא שדה חובה")
     .min(2, "השם חייב להכיל לפחות 2 תווים")
     .max(100, "השם יכול להכיל עד 100 תווים"),
@@ -22,7 +21,6 @@ const schema = yup.object({
     .required("תיאור הוא שדה חובה")
     .min(5, "התיאור חייב להכיל לפחות 5 תווים")
     .max(500, "התיאור יכול להכיל עד 500 תווים"),
-  // מגיע מ-select כמחרוזת - yup.number ממיר למספר. בחירה ריקה = NaN = typeError
   categoryId: yup
     .number()
     .typeError("יש לבחור קטגוריה")
@@ -37,7 +35,6 @@ const schema = yup.object({
     .trim()
     .required("הוראות הכנה הן שדה חובה")
     .max(10000, "ההוראות יכולות להכיל עד 10,000 תווים"),
-  // שדה מספר ריק מגיע כ-NaN - בלי typeError מקבלים הודעה באנגלית של yup
   prepTimeMinutes: yup
     .number()
     .typeError("יש להזין זמן הכנה במספרים")
@@ -52,7 +49,6 @@ const schema = yup.object({
     .integer("מספר מנות חייב להיות מספר שלם")
     .min(1, "לפחות מנה אחת")
     .max(100, "עד 100 מנות"),
-  // mixed<Difficulty> - כדי שהטיפוס יהיה "EASY" | "MEDIUM" | "HARD" ולא סתם string
   difficulty: yup
     .mixed<Difficulty>()
     .oneOf(["EASY", "MEDIUM", "HARD"], "יש לבחור רמת קושי")
@@ -61,13 +57,11 @@ const schema = yup.object({
     .mixed<KosherType>()
     .oneOf(["MEAT", "DAIRY", "PAREVE"], "יש לבחור סוג תפריט")
     .required("יש לבחור סוג תפריט"),
-  // לא חובה ביצירה - בלי סימון נשלח false
   isPublic: yup.boolean().default(false),
 })
 
 export type RecipeFormInputs = yup.InferType<typeof schema>
 
-// מה שהטופס מעביר החוצה בשליחה: השדות, תמונה חדשה (אם נבחרה), והאם למחוק את הקיימת
 export interface RecipeFormResult {
   data: RecipeFormInputs
   image: File | null
@@ -77,30 +71,24 @@ export interface RecipeFormResult {
 interface RecipeFormProps {
   title: string
   submitText: string
-  // בעריכה - הערכים של המתכון הקיים. בהוספה - ריק
   defaultValues?: Partial<RecipeFormInputs>
-  // בעריכה - התמונה הנוכחית, כדי להציג אותה ולאפשר מחיקה
   currentImageUrl?: string | null
-  // הדף מחליט מה לשלוח לשרת. אם השרת מחזיר שגיאת ולידציה - זורקים אותה, והטופס מציג ליד השדות
   onSubmit: (result: RecipeFormResult) => Promise<void>
 }
 
 const difficultyText: Record<Difficulty, string> = { EASY: "קל", MEDIUM: "בינוני", HARD: "קשה" }
 const kosherText: Record<KosherType, string> = { MEAT: "בשרי", DAIRY: "חלבי", PAREVE: "פרווה" }
 
-// תמונה - נבדקת לפני השליחה, כי היא נשלחת בבקשה נפרדת ולא דרך yup
 const imageTypes = ["image/jpeg", "image/png", "image/webp"]
-const maxImageSize = 5 * 1024 * 1024 // 5MB
+const maxImageSize = 5 * 1024 * 1024
 
 const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmit }: RecipeFormProps) => {
   const { data: categories, isLoading: isLoadingCategories } = useGetCategoriesQuery()
 
-  // input של קובץ לא עובד טוב עם yup - שומרים את הקובץ ב-state
   const [image, setImage] = useState<File | null>(null)
   const [imageError, setImageError] = useState("")
   const [removeImage, setRemoveImage] = useState(false)
 
-  // הטיפוס מפורש - אחרת TypeScript מסיק אותו מ-defaultValues החלקיים ושדות החובה נהיים אופציונליים
   const {
     register,
     handleSubmit,
@@ -108,8 +96,7 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmi
     formState: { errors, isSubmitting },
   } = useForm<RecipeFormInputs>({
     resolver: yupResolver(schema),
-    mode: "onSubmit", // ולידציה בעת שליחת הטופס
-    // מספרים ו-select בהוספה לא מקבלים ערך התחלתי - כך שדה ריק ייתפס בוולידציה
+    mode: "onSubmit",
     defaultValues: {
       title: "",
       description: "",
@@ -124,7 +111,6 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmi
     const file = input.files?.[0]
     setImageError("")
     if (!file) return setImage(null)
-    // קובץ לא תקין - מנקים גם את ה-input, אחרת שם הקובץ נשאר מוצג כאילו נבחר
     const reject = (message: string) => {
       input.value = ""
       setImage(null)
@@ -140,14 +126,11 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmi
       await onSubmit({ data, image, removeImage })
     }
     catch (e) {
-      // 400 VALIDATION_ERROR - השרת מחזיר הודעה לכל שדה, מציגים אותה ליד השדה
       const err = (e as { data?: errResponse }).data?.error
       err?.details?.forEach((d) => setError(d.field as keyof RecipeFormInputs, { message: d.message }))
     }
   }
 
-  // מחכים לקטגוריות לפני שמציגים את הטופס: אם ה-select נוצר בלי האפשרויות,
-  // בעריכה הקטגוריה של המתכון לא תופיע כנבחרת גם כשהאפשרויות יגיעו
   if (isLoadingCategories) return <p>טוען...</p>
 
   return (
@@ -157,12 +140,10 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmi
       <FormField type="text" registration={register("title")} error={errors.title} label="שם המתכון" required instructions="בין 2 ל-100 תווים" maxLength={100} />
       <FormField type="text" registration={register("description")} error={errors.description} label="תיאור קצר" required instructions="בין 5 ל-500 תווים" maxLength={500} />
 
-      {/* FormField תומך רק ב-input - select ו-textarea כתובים כאן באותו מבנה */}
       <div>
         <label htmlFor="recipe-category">קטגוריה<span aria-hidden="true"> *</span></label>
         <select id="recipe-category" {...register("categoryId")} aria-invalid={!!errors.categoryId}>
           <option value="">בחירת קטגוריה</option>
-          {/* categories הוא undefined עד שהתשובה מגיעה, לכן ?. */}
           {categories?.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
@@ -185,7 +166,6 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmi
       <FormField type="number" registration={register("prepTimeMinutes")} error={errors.prepTimeMinutes} label="זמן הכנה (דקות)" required instructions="מספר שלם בין 1 ל-1440" />
       <FormField type="number" registration={register("servings")} error={errors.servings} label="מספר מנות" required instructions="מספר שלם בין 1 ל-100" />
 
-      {/* Record הוא אובייקט, Object.entries הופך אותו למערך [מפתח, ערך] */}
       <div>
         <label htmlFor="recipe-difficulty">רמת קושי<span aria-hidden="true"> *</span></label>
         <select id="recipe-difficulty" {...register("difficulty")} aria-invalid={!!errors.difficulty}>
@@ -212,12 +192,10 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmi
 
       <div>
         <label htmlFor="recipe-image">{currentImageUrl ? "החלפת תמונה" : "תמונה (לא חובה)"}</label>
-        {/* בעריכה - מציגים את התמונה הקיימת */}
         {currentImageUrl && !removeImage && <img src={currentImageUrl} alt="התמונה הנוכחית" width={150} />}
         <input id="recipe-image" type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(e) => onImageChange(e.target)} />
         <p>JPG, PNG או WEBP, עד 5MB</p>
         {imageError && <p role="alert">{imageError}</p>}
-        {/* מחיקה רלוונטית רק כשיש תמונה ולא נבחרה חדשה במקומה */}
         {currentImageUrl && !image && (
           <label>
             <input type="checkbox" checked={removeImage} onChange={(e) => setRemoveImage(e.target.checked)} />

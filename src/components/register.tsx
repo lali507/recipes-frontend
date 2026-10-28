@@ -29,7 +29,6 @@ const schema = yup.object({
     .string()
     .required("סיסמה היא שדה חובה")
     .min(8, "הסיסמה חייבת להכיל לפחות 8 תווים")
-    // השרת סופר בתים ולא תווים: אות עברית = 2 בתים
     .test("max-bytes", "הסיסמה ארוכה מדי (עד 72 תווים באנגלית)", (value) => new TextEncoder().encode(value ?? "").length <= 72)
     .matches(/[A-Za-z֐-׿]/, "הסיסמה חייבת לכלול לפחות אות אחת")
     .matches(/\d/, "הסיסמה חייבת לכלול לפחות ספרה אחת"),
@@ -37,7 +36,7 @@ const schema = yup.object({
   .string()
   .required("אימות סיסמה הוא שדה חובה")
   .oneOf([yup.ref("password")], "סיסמאות חייבות להיות זהות"),
-  
+
 })
 
 type Inputs = yup.InferType<typeof schema>
@@ -58,7 +57,7 @@ export default function Register() {
     formState: { errors, isSubmitting ,},
   } = useForm({
     resolver: yupResolver(schema),
-    mode: "onSubmit", // ולידציה בעת שליחת הטופס
+    mode: "onSubmit",
     defaultValues: {
       fullName: "",
       email: "",
@@ -71,22 +70,20 @@ export default function Register() {
   const onSubmit: SubmitHandler<Inputs> = async function (data) {
   try{
   const res=await registerFn({name:data.fullName,email:data.email,password:data.password}).unwrap()
- 
+
   localStorage.setItem("token",res.token)
   dispatch(setUser(res.user))
-  // אחרי הרשמה המשתמשת כבר מחוברת - נכנסים ישר לאתר
   nav("/recipes", { replace: true })
   }
     catch (e) {
   const err = (e as { data?: errResponse }).data?.error
   if (!err) return
 
-  // 409 - המייל כבר רשום
   if (err.code === "EMAIL_TAKEN") {
     setError("email", { message: "האימייל הזה כבר רשום" })
   }
 
-  
+
 }
 
 }
@@ -94,15 +91,13 @@ export default function Register() {
   const schemaFields: FieldDef[] = [
     { name: "fullName", label: "שם מלא", type: "text" , placeholder: "אנונימי", required: true,instructions:"השם בין 2 ל-50 תווים"},
     { name: "email", label: "אימייל", type: "email" , placeholder: "example@example.com", required: true,instructions:"כתובת אימייל תקינה, עד 254 תווים"},
-   
+
     { name: "password", label: "סיסמה", type: "password", required: true ,instructions:"לפחות 8 תווים, כולל אות אחת וספרה אחת"},
     { name: "confirmPassword", label: "אימות סיסמה", type: "password", required: true ,instructions:"הקלידו שוב את אותה סיסמה"}
   ];
 
-  // שגיאת אימייל תפוס כבר מוצגת ליד השדה - לא מציגים אותה שוב למעלה
   const emailTaken = (error as { data?: errResponse } | undefined)?.data?.error?.code === "EMAIL_TAKEN"
 
-  // כבר מחוברת - אין סיבה להציג טופס הרשמה
   if (user && !isSubmitting) return <Navigate to="/recipes" replace />
 
   return (
@@ -113,12 +108,12 @@ export default function Register() {
   isLoading={isLoading}
   isError={isError && !emailTaken}
   isSuccess={isSuccess}
-  eror={error}//api eror exp 500
+  eror={error}
   successText="ההרשמה הושלמה בהצלחה!"
 />
 
-      
-      
+
+
       {schemaFields.map((field) =>  (
         <FormField
           key={field.name}
@@ -127,7 +122,7 @@ export default function Register() {
           placeholder={field.placeholder}
           required={field.required}
           registration={register(field.name)}
-          error={errors[field.name]}//vlidation eror schema or email exist
+          error={errors[field.name]}
           instructions={field.instructions}
         />
       ))

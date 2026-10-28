@@ -8,7 +8,6 @@ export const store = configureStore({
     [apiSlice.reducerPath]: apiSlice.reducer,
     user: userReducer,
   },
-  // חובה: ה-middleware מטפל ב-cache ובשליחת הבקשות
   middleware: (getDefault) => getDefault().concat(apiSlice.middleware),
 })
 

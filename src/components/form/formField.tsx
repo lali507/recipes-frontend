@@ -7,13 +7,12 @@ export type FieldConfig = {
   label: string;
     type: 'text' | 'email' | 'password' | 'number' | 'checkbox' | 'radio' | 'select'|'tel';
 
-  //options?: { label: string; value: string }[]; // For select, radio, and checkbox types
   placeholder?: string;
-  required?: boolean; // מציג כוכבית ליד התווית
+  required?: boolean;
   registration: UseFormRegisterReturn;
   error?: FieldError;
   instructions?:string
-  maxLength?: number // הדפדפן לא נותן להקליד יותר תווים מזה
+  maxLength?: number
 
 
 }
@@ -24,10 +23,9 @@ export type FieldConfig = {
 
 
 const FormField = ({label, registration, error,type,placeholder,required,instructions,maxLength}: FieldConfig) => {
-    const id = useId(); // מזהה ייחודי - כדי שלא יהיו id כפולים כששני טפסים באותו דף
+    const id = useId();
     const hintId = `${id}-hint`;
     const errorId = `${id}-error`;
-    // מחבר את ההוראה והשגיאה ל-input כדי שקורא מסך יקריא אותן
     const describedBy = [instructions && hintId, error && errorId].filter(Boolean).join(" ") || undefined;
     return (
         <div>
