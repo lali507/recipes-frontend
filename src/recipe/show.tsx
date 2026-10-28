@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router"
 import type { Recipe } from "../types/recipe"
 import FavoriteButton from "./FavoriteButton"
 import VisibilityBadge from "./VisibilityBadge"
+import { formatDate, formatDateTime } from "../utils/date"
 
 interface RecipeListProps {
     recipes?: Recipe[]
@@ -42,6 +43,7 @@ const RecipeList = ({ recipes, isSearching }: RecipeListProps) => {
                     <p>{recipe.description}</p>
                     {!recipe.isOwner && <p>מאת: {recipe.author.name}</p>}
                     <p>{recipe.category.name} · {recipe.prepTimeMinutes} דקות</p>
+                    <p><time dateTime={recipe.createdAt} title={formatDateTime(recipe.createdAt)}>פורסם: {formatDate(recipe.createdAt)}</time></p>
                     {recipe.isOwner && <p><VisibilityBadge isPublic={recipe.isPublic ?? false} /></p>}
                     <FavoriteButton recipeId={recipe.id} isFavorite={recipe.isFavorite} />
                 </li>

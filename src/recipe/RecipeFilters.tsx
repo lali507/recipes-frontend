@@ -10,7 +10,7 @@ import FormField from "../components/form/formField"
 
 const difficultyText: Record<Difficulty, string> = { EASY: "קל", MEDIUM: "בינוני", HARD: "קשה" }
 const kosherText: Record<KosherType, string> = { MEAT: "בשרי", DAIRY: "חלבי", PAREVE: "פרווה" }
-const sortText: Record<RecipeSort, string> = { newest: "מהחדש לישן", oldest: "מהישן לחדש", prepTime: "זמן הכנה", title: "לפי שם" }
+const sortText: Record<Exclude<RecipeSort, "newest">, string> = { oldest: "מהישן לחדש", prepTime: "זמן הכנה (מהקצר לארוך)", title: "שם המתכון (א-ת)" }
 const timePrep: number[] = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
 
 const RecipeFilters = ({ showVisibility = false, showAuthor = false }: { showVisibility?: boolean; showAuthor?: boolean }) => {
@@ -117,9 +117,9 @@ const RecipeFilters = ({ showVisibility = false, showAuthor = false }: { showVis
                 value={searchParams.get("sort") ?? ""}
                 onChange={(e) => setParam("sort", e.target.value)}
             >
-                <option value="">מיון</option>
+                <option value="">מיון לפי: מהחדש לישן</option>
                 {Object.entries(sortText).map(([key, text]) => (
-                    <option key={key} value={key}>{text}</option>
+                    <option key={key} value={key}>מיון לפי: {text}</option>
                 ))}
             </select>
 
