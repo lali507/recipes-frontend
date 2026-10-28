@@ -17,7 +17,7 @@ const ShowRecipePage = ()=>{
     const from: string = location.state?.from ?? "/recipes"
     const backText = from.startsWith("/my-recipes") ? "חזרה למתכונים שלי"
         : from.startsWith("/favorites") ? "חזרה למועדפים"
-        : "חזרה לרשימת המתכונים"
+        : "חזרה למתכונים המשותפים"
 
     const onDelete = async () => {
         if (!window.confirm("למחוק את המתכון? אי אפשר לבטל את הפעולה.")) return

@@ -22,7 +22,7 @@ const Header = () => {
              <Link to="">דף הבית</Link>
 
 
-             <Link to="recipes">כל המתכונים</Link>
+             <Link to="recipes">מתכונים משותפים</Link>
 
              <Link to ="my-recipes">המתכונים שלי</Link>
              <Link to = "favorites">המועדפים</Link>

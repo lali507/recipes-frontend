@@ -27,6 +27,17 @@ const ownLabelStyle: CSSProperties = {
     fontWeight: 700,
 }
 
+const openButtonStyle: CSSProperties = {
+    display: "inline-block",
+    marginInlineStart: 12,
+    padding: "6px 16px",
+    borderRadius: 999,
+    background: "#E8452C",
+    color: "#fff",
+    fontWeight: 700,
+    textDecoration: "none",
+}
+
 const RecipeList = ({ recipes, isSearching }: RecipeListProps) => {
     const location = useLocation()
     const from = location.pathname + location.search
@@ -46,6 +57,10 @@ const RecipeList = ({ recipes, isSearching }: RecipeListProps) => {
                     <p><time dateTime={recipe.createdAt} title={formatDateTime(recipe.createdAt)}>פורסם: {formatDate(recipe.createdAt)}</time></p>
                     {recipe.isOwner && <p><VisibilityBadge isPublic={recipe.isPublic ?? false} /></p>}
                     <FavoriteButton recipeId={recipe.id} isFavorite={recipe.isFavorite} />
+                    <Link to={`/recipes/${recipe.id}`} state={{ from }} style={openButtonStyle}
+                        aria-label={`לצפייה במתכון המלא: ${recipe.title}`}>
+                        לצפייה במתכון המלא ←
+                    </Link>
                 </li>
             ))}
         </ul>

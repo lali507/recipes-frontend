@@ -20,7 +20,7 @@ const FavoritePage = () => {
         <p aria-live="polite">
             {isSearching && "טוען..."}
             {!isFetching && data?.pagination.total === 0 &&
-                <>עדיין אין מתכונים במועדפים. <Link to="/recipes">לכל המתכונים</Link></>}
+                <>עדיין אין מתכונים במועדפים. <Link to="/recipes">למתכונים המשותפים</Link></>}
         </p>
 
         <RecipeList recipes={recipes} isSearching={isSearching} />

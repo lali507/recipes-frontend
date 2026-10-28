@@ -54,7 +54,7 @@ const HomePage = () => {
                 </p>
                 <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
                     {user ? <>
-                        <Link to="/recipes" style={buttonStyle(true)}>לכל המתכונים</Link>
+                        <Link to="/recipes" style={buttonStyle(true)}>למתכונים המשותפים</Link>
                         <Link to="/recipes/new" style={buttonStyle(false)}>הוספת מתכון</Link>
                     </> : <>
                         <Link to="/register" style={buttonStyle(true)}>הצטרפות חינם</Link>
