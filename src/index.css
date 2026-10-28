@@ -1,88 +1,91 @@
-@import "tailwindcss";
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e5e4e7;
+  --code-bg: #f4f3ec;
+  --accent: #aa3bff;
+  --accent-bg: rgba(170, 59, 255, 0.1);
+  --accent-border: rgba(170, 59, 255, 0.5);
+  --social-bg: rgba(244, 243, 236, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-@theme {
-  --font-sans: "Heebo", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Rubik", "Heebo", ui-sans-serif, system-ui, sans-serif;
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
 
-  --color-brand-50: #fff7f1;
-  --color-brand-100: #ffeadb;
-  --color-brand-200: #ffd3b8;
-  --color-brand-300: #ffb48a;
-  --color-brand-400: #ff9a3c;
-  --color-brand-500: #f6743a;
-  --color-brand-600: #e8452c;
-  --color-brand-700: #c4321f;
-  --color-brand-800: #9c291b;
-  --color-brand-900: #6f1f15;
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
-  --color-cream: #fffbf7;
-  --color-ink: #2b1d15;
-  --color-cocoa: #8a6a55;
-
-  --animate-float: float 5s ease-in-out infinite;
-  --animate-drop: drop 4.2s ease-in infinite both;
-  --animate-ripple: ripple 4.2s ease-out infinite both;
-  --animate-stir: stir 2.8s ease-in-out infinite;
-  --animate-swirl: swirl 7s linear infinite;
-  --animate-steam: steam 3.6s ease-out infinite both;
-  --animate-twinkle: twinkle 2.6s ease-in-out infinite both;
-  --animate-fade-up: fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  --animate-toast-in: toast-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-  --animate-heart-pop: heart-pop 0.4s ease-out;
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-10px) rotate(3deg); }
+  @media (max-width: 1024px) {
+    font-size: 16px;
   }
+}
 
-  @keyframes drop {
-    0% { transform: translateY(-40px) rotate(0deg); opacity: 0; }
-    10% { opacity: 1; }
-    44% { transform: translateY(150px) rotate(150deg) scale(1); opacity: 1; }
-    52% { transform: translateY(166px) rotate(170deg) scale(0.6); opacity: 0; }
-    100% { transform: translateY(166px) scale(0.6); opacity: 0; }
-  }
+#root {
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
 
-  @keyframes ripple {
-    0%, 43% { transform: scale(0.2); opacity: 0; }
-    47% { opacity: 0.9; }
-    70% { transform: scale(1.5); opacity: 0; }
-    100% { transform: scale(1.5); opacity: 0; }
-  }
+body {
+  margin: 0;
+}
 
-  @keyframes stir {
-    0%, 100% { transform: rotate(-14deg); }
-    50% { transform: rotate(14deg); }
-  }
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
 
-  @keyframes swirl {
-    to { transform: rotate(360deg); }
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
   }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
 
-  @keyframes steam {
-    0% { transform: translateY(12px) scaleY(0.8); opacity: 0; }
-    30% { opacity: 0.8; }
-    100% { transform: translateY(-34px) scaleY(1.15); opacity: 0; }
-  }
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
 
-  @keyframes twinkle {
-    0%, 100% { transform: scale(0.6); opacity: 0.2; }
-    50% { transform: scale(1); opacity: 1; }
-  }
-
-  @keyframes fade-up {
-    from { transform: translateY(16px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  @keyframes toast-in {
-    from { transform: translateY(24px) scale(0.95); opacity: 0; }
-    to { transform: translateY(0) scale(1); opacity: 1; }
-  }
-
-  @keyframes heart-pop {
-    0% { transform: scale(1); }
-    40% { transform: scale(1.35); }
-    100% { transform: scale(1); }
-  }
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
 }

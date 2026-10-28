@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useLocation } from "react-router"
+import { Navigate, Outlet,  } from "react-router"
 import { useAppSelector } from "../store/hook"
 import { selectUser } from "../store/state/userSlice"
 import type { userResponse } from "../types/user"
@@ -6,12 +6,11 @@ import ForbiddenPage from "../pages/ForbiddenPage"
 
 
 const Protected = ({ roles }: { roles: userResponse["role"][] }) => {
-
+    
     const user = useAppSelector(selectUser)
-    const location = useLocation()
 
     if (!user)
-        return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />
+        return <Navigate to="/login" />
 
     if (!roles.includes(user.role))
         return <ForbiddenPage />
