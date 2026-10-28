@@ -1,24 +1,30 @@
 import { useSearchParams } from "react-router"
 import type { Difficulty, KosherType, RecipeFilters, RecipeSort } from "../types/recipe"
 
-// custom hook - פונקציה רגילה שמותר לקרוא בה ל-hooks אחרים
-// בונה את הסינון מה-URL, כדי שכל הדפים עם רשימת מתכונים ישתמשו באותו קוד
+export const toPositiveInt = (value: string | null) => {
+    const num = Number(value)
+    return value && Number.isInteger(num) && num > 0 ? num : undefined
+}
+
+const oneOf = <T extends string>(value: string | null, allowed: readonly T[]) =>
+    allowed.includes(value as T) ? (value as T) : undefined
+
+const difficulties: Difficulty[] = ["EASY", "MEDIUM", "HARD"]
+const kosherTypes: KosherType[] = ["MEAT", "DAIRY", "PAREVE"]
+const sorts: RecipeSort[] = ["newest", "oldest", "prepTime", "title"]
+
 const useRecipeFilters = () => {
-    // פירוק המערך - צריך רק את הערכים, לא את פונקציית העדכון
     const [searchParams] = useSearchParams()
 
-    // get מחזיר תמיד string או null. מספרים ממירים עם Number, ו-null הופך ל-undefined כדי שלא יישלח
-    const categoryId = searchParams.get("categoryId")
-    const maxPrepTime = searchParams.get("maxPrepTime")
-    const page = searchParams.get("page")
     const filters: RecipeFilters = {
-        search: searchParams.get("search") ?? undefined,
-        categoryId: categoryId ? Number(categoryId) : undefined,
-        difficulty: (searchParams.get("difficulty") as Difficulty) ?? undefined,
-        kosherType: (searchParams.get("kosherType") as KosherType) ?? undefined,
-        maxPrepTime: maxPrepTime ? Number(maxPrepTime) : undefined,
-        sort: (searchParams.get("sort") as RecipeSort) ?? undefined,
-        page: page ? Number(page) : undefined,
+        search: searchParams.get("search") || undefined,
+        categoryId: toPositiveInt(searchParams.get("categoryId")),
+        authorId: toPositiveInt(searchParams.get("authorId")),
+        difficulty: oneOf(searchParams.get("difficulty"), difficulties),
+        kosherType: oneOf(searchParams.get("kosherType"), kosherTypes),
+        maxPrepTime: toPositiveInt(searchParams.get("maxPrepTime")),
+        sort: oneOf(searchParams.get("sort"), sorts),
+        page: toPositiveInt(searchParams.get("page")),
     }
     return filters
 }

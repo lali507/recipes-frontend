@@ -1,14 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit"
 import { apiSlice } from "./api/apiSlice"
 import userReducer from "./state/userSlice"
+import toastReducer from "./state/toastSlice"
 
 
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
     user: userReducer,
+    toast: toastReducer,
   },
-  // חובה: ה-middleware מטפל ב-cache ובשליחת הבקשות
   middleware: (getDefault) => getDefault().concat(apiSlice.middleware),
 })
 

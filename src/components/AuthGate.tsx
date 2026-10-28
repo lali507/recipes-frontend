@@ -4,27 +4,24 @@ import { useMeQuery } from "../store/api/authApi"
 import type { ReactNode } from "react"
 import { useAppDispatch, useAppSelector } from "../store/hook"
 import { selectUser, setUser } from "../store/state/userSlice"
+import Loader from "./Loader"
 
-const AuthGate= ({children}:{children:ReactNode})=>{
+const AuthGate = ({ children }: { children: ReactNode }) => {
 
     const dispatch = useAppDispatch()
     const user = useAppSelector(selectUser)
-    const token = localStorage.getItem("token")//take token
-    const{isSuccess,isLoading,data} =  useMeQuery(undefined,{skip:!token})//chek the token
+    const token = localStorage.getItem("token")
+    const { isSuccess, isLoading, data } = useMeQuery(undefined, { skip: !token })
 
-    useEffect(()=>{
-      if(isSuccess)//is user
-      {
-        dispatch(setUser(data.user))
-      }
-    },[isSuccess,data,dispatch])
+    useEffect(() => {
+        if (isSuccess && token) {
+            dispatch(setUser(data.user))
+        }
+    }, [isSuccess, data, token, dispatch])
 
-    // מחכים לתשובה מהשרת - עדיין לא יודעים מי המשתמשת
-    // isSuccess בלי user = התשובה הגיעה אבל useEffect עוד לא שמר אותה ב-store
-    if(isLoading || (isSuccess && !user))
-      return <p>טוען...</p>
+    if (isLoading || (token && isSuccess && !user))
+        return <div className="grid min-h-screen place-items-center"><Loader text="מכינים לך את המטבח..." /></div>
 
-    // אין טוקן / הצלחה / שגיאה (הטוקן כבר נמחק ב-apiSlice) - מציגים את האתר
     return children
 }
 export default AuthGate
