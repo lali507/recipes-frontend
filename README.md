@@ -10,7 +10,7 @@
 
 | מה | כתובת |
 |---|---|
-| **האתר** | _יעודכן בקרוב_ |
+| **האתר** | https://recipes-frontend-ey4y.onrender.com |
 | **השרת (API)** | https://recipes-backend-ubmp.onrender.com/api |
 | **תיעוד השרת (Swagger)** | https://recipes-backend-ubmp.onrender.com/api-docs |
 | **בדיקת תקינות השרת** | https://recipes-backend-ubmp.onrender.com/api/health |
