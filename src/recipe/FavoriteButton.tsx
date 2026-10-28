@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useAddFavoriteMutation, useRemoveFavoriteMutation } from "../store/api/favoriteApi"
 
 interface FavoriteButtonProps {
@@ -12,18 +13,23 @@ const FavoriteButton = ({ recipeId, isFavorite }: FavoriteButtonProps) => {
   const [addFn, { isLoading: isAdding }] = useAddFavoriteMutation()
   const [removeFn, { isLoading: isRemoving }] = useRemoveFavoriteMutation()
   const isBusy = isAdding || isRemoving
+  const [failed, setFailed] = useState(false)
 
   const toggle = async () => {
+    setFailed(false)
     try {
       if (isFavorite) await removeFn(recipeId).unwrap()
       else await addFn(recipeId).unwrap()
     }
-    catch (e) {
-      console.log(e)
+    catch {
+      setFailed(true)
     }
   }
 
-  return (
+  // title - הודעה קטנה שמופיעה כשמעבירים את העכבר מעל הלב
+  const hint = isFavorite ? "מתכון שאהבתי - שמור במועדפים. לחיצה תסיר אותו" : "אהבת? לחיצה על הלב תשמור את המתכון במועדפים"
+
+  return (<>
     <button
       type="button"
       onClick={toggle}
@@ -32,9 +38,11 @@ const FavoriteButton = ({ recipeId, isFavorite }: FavoriteButtonProps) => {
       // aria-pressed - קורא מסך יודע אם הכפתור "דלוק"
       aria-pressed={isFavorite}
       aria-label={isFavorite ? "הסרה מהמועדפים" : "הוספה למועדפים"}
+      title={hint}
     >
       {isFavorite ? "❤️" : "🤍"}
     </button>
-  )
+    {failed && <span role="alert">הפעולה נכשלה, נסי שוב</span>}
+  </>)
 }
 export default FavoriteButton

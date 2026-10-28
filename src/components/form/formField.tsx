@@ -13,6 +13,7 @@ export type FieldConfig = {
   registration: UseFormRegisterReturn;
   error?: FieldError;
   instructions?:string
+  maxLength?: number // הדפדפן לא נותן להקליד יותר תווים מזה
 
 
 }
@@ -22,7 +23,7 @@ export type FieldConfig = {
 
 
 
-const FormField = ({label, registration, error,type,placeholder,required,instructions}: FieldConfig) => {
+const FormField = ({label, registration, error,type,placeholder,required,instructions,maxLength}: FieldConfig) => {
     const id = useId(); // מזהה ייחודי - כדי שלא יהיו id כפולים כששני טפסים באותו דף
     const hintId = `${id}-hint`;
     const errorId = `${id}-error`;
@@ -31,7 +32,7 @@ const FormField = ({label, registration, error,type,placeholder,required,instruc
     return (
         <div>
             <label htmlFor={id}>{label}{required && <span aria-hidden="true"> *</span>}</label>
-            <input id={id} type={type} {...registration}  placeholder={placeholder||""}
+            <input id={id} type={type} {...registration}  placeholder={placeholder||""} maxLength={maxLength}
               aria-required={required}
               aria-invalid={!!error}
               aria-describedby={describedBy}

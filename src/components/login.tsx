@@ -7,9 +7,9 @@ import MyButton from "./form/Button"
 import { useLoginMutation } from "../store/api/authApi"
 
 import ShowPromise from "./showPromise"
-import { useAppDispatch } from "../store/hook"
-import { setUser } from "../store/state/userSlice"
-import { Link, useNavigate } from "react-router"
+import { useAppDispatch, useAppSelector } from "../store/hook"
+import { selectUser, setUser } from "../store/state/userSlice"
+import { Link, Navigate, useLocation, useNavigate } from "react-router"
 const schema = yup.object({
   
   email: yup
@@ -38,6 +38,9 @@ export default function Login() {
   const [loginFn,{isError,error,isSuccess,isLoading}]=useLoginMutation()
   const nav = useNavigate()
   const dispatch = useAppDispatch()
+  const user = useAppSelector(selectUser)
+  // Protected שולח ב-state את הדף שביקשו לפני ההפניה להתחברות
+  const from: string = useLocation().state?.from ?? "/recipes"
   const {
     register,
     handleSubmit,
@@ -61,7 +64,7 @@ export default function Login() {
      const res = await loginFn({email:data.email,password:data.password}).unwrap()
      localStorage.setItem("token",res.token)
       dispatch(setUser(res.user))
-      nav("/recipes")
+      nav(from, { replace: true })
     }
     catch(e)
     {
@@ -70,7 +73,10 @@ export default function Login() {
     }
    
 }
-   
+
+  // כבר מחוברת (למשל חזרה אחורה לדף ההתחברות) - אין סיבה להציג את הטופס
+  if (user && !isSubmitting) return <Navigate to={from} replace />
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <h2>טופס התחברות</h2>
@@ -88,7 +94,7 @@ export default function Login() {
      
      
       <MyButton text={isSubmitting ? "שולח..." : "שלח"} type="submit" disabled={isSubmitting} />
-      <Link to="/register">עדיין לא רשומים</Link>
+      <Link to="/register">עדיין לא רשומה? להרשמה</Link>
 
       
     </form>

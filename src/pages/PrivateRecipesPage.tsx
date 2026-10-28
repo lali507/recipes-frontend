@@ -24,6 +24,8 @@ const PrivateRecipesPage = () => {
     // חיפוש חוזר: יש כבר תוצאות ישנות על המסך, והחדשות עוד לא הגיעו
     const isSearching = isFetching && !isLoading
     const search = filters.search
+    // נבחר סינון כלשהו (חוץ מעמוד) - אז רשימה ריקה לא אומרת שאין לי מתכונים בכלל
+    const hasFilters = [...searchParams.keys()].some((key) => key !== "page")
 
     return (<>
         <h2>המתכונים שלי</h2>
@@ -35,8 +37,11 @@ const PrivateRecipesPage = () => {
         <p aria-live="polite">
             {isSearching && "מחפש..."}
             {/* רק אחרי שהתשובה הגיעה - אחרת "לא נמצאו" יהבהב בזמן החיפוש */}
-            {!isFetching && recipes?.length === 0 &&
-                (search ? `לא נמצאו מתכונים עבור "${search}"` : <>עדיין לא הוספת מתכונים. <Link to="/recipes/new">להוספת המתכון הראשון</Link></>)}
+            {/* total ולא items - בעמוד שכבר לא קיים items ריק, אבל יש מתכונים בעמודים אחרים */}
+            {!isFetching && data?.pagination.total === 0 &&
+                (search ? `לא נמצאו מתכונים עבור "${search}"`
+                    : hasFilters ? "לא נמצאו מתכונים שמתאימים לסינון"
+                    : <>עדיין לא הוספת מתכונים. <Link to="/recipes/new">להוספת המתכון הראשון</Link></>)}
         </p>
 
         <RecipeList recipes={recipes} isSearching={isSearching} />

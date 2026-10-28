@@ -26,7 +26,11 @@ const RecipeList = ({ recipes, isSearching }: RecipeListProps) => {
                         <h3>{recipe.title}</h3>
                     </Link>
                     <p>{recipe.description}</p>
-                    <p>{recipe.category.name} · {recipe.prepTimeMinutes} דקות</p>
+                    <p>
+                        {recipe.category.name} · {recipe.prepTimeMinutes} דקות
+                        {/* ציבורי/פרטי מעניין רק את היוצרת - מתכון של אחרים תמיד ציבורי */}
+                        {recipe.isOwner && (recipe.isPublic ? " · ציבורי" : " · פרטי")}
+                    </p>
                     {/* מחוץ ל-Link - כדי שלחיצה על הלב לא תפתח את המתכון */}
                     <FavoriteButton recipeId={recipe.id} isFavorite={recipe.isFavorite} />
                 </li>

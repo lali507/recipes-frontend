@@ -5,8 +5,9 @@ import FormField from "./form/formField"
 import type { FieldConfig } from "./form/formField"
 import MyButton from "./form/Button"
 import { useRegisterMutation } from "../store/api/authApi"
-import { useAppDispatch } from "../store/hook"
-import { setUser } from "../store/state/userSlice"
+import { useAppDispatch, useAppSelector } from "../store/hook"
+import { selectUser, setUser } from "../store/state/userSlice"
+import { Link, Navigate, useNavigate } from "react-router"
 
 
 import ShowPromise from "./showPromise"
@@ -47,6 +48,8 @@ type FieldDef = Omit<FieldConfig, "registration"| "error"> & { name: keyof Input
 export default function Register() {
   const[ registerFn,{isSuccess,isError,isLoading,error}] = useRegisterMutation()
   const dispatch = useAppDispatch()
+  const nav = useNavigate()
+  const user = useAppSelector(selectUser)
   const {
     register,
     handleSubmit,
@@ -71,6 +74,8 @@ export default function Register() {
  
   localStorage.setItem("token",res.token)
   dispatch(setUser(res.user))
+  // אחרי הרשמה המשתמשת כבר מחוברת - נכנסים ישר לאתר
+  nav("/recipes", { replace: true })
   }
     catch (e) {
   const err = (e as { data?: errResponse }).data?.error
@@ -96,6 +101,9 @@ export default function Register() {
 
   // שגיאת אימייל תפוס כבר מוצגת ליד השדה - לא מציגים אותה שוב למעלה
   const emailTaken = (error as { data?: errResponse } | undefined)?.data?.error?.code === "EMAIL_TAKEN"
+
+  // כבר מחוברת - אין סיבה להציג טופס הרשמה
+  if (user && !isSubmitting) return <Navigate to="/recipes" replace />
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -126,8 +134,8 @@ export default function Register() {
     }
 
 
-      {/* todo link to login */}
       <MyButton text={isSubmitting ? "שולח..." : "שלח"} type="submit" disabled={isSubmitting} />
+      <Link to="/login">כבר רשומה? להתחברות</Link>
 
 
     </form>

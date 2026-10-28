@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useSearchParams } from "react-router"
 import { useForm } from "react-hook-form"
 import { useGetCategoriesQuery } from "../store/api/categoryApi"
@@ -19,9 +20,18 @@ const RecipeFilters = ({ showVisibility = false }: { showVisibility?: boolean })
 
     // react-hook-form שומר את ערך החיפוש - לא צריך useState
     // הערך ההתחלתי מה-URL, כדי שהחיפוש יישאר אחרי רענון
-    const { register, handleSubmit } = useForm({
-        defaultValues: { search: searchParams.get("search") ?? "" },
+    const searchParam = searchParams.get("search") ?? ""
+    const { register, handleSubmit, setValue } = useForm({
+        defaultValues: { search: searchParam },
     })
+
+    // ה-URL השתנה מבחוץ (למשל לחיצה על "כל המתכונים" בתפריט) - מעדכנים גם את תיבת החיפוש
+    useEffect(() => {
+        setValue("search", searchParam)
+    }, [searchParam, setValue])
+
+    // יש סינון כלשהו חוץ מעמוד - רק אז מציגים כפתור ניקוי
+    const hasFilters = [...searchParams.keys()].some((key) => key !== "page")
 
     // מעדכנת פרמטר אחד ב-URL. ערך ריק = מוחקים את הפרמטר
     const setParam = (key: string, value: string) => {
@@ -44,18 +54,22 @@ const RecipeFilters = ({ showVisibility = false }: { showVisibility?: boolean })
                     label="חיפוש"
                     type="text"
                     registration={register("search", {
-        onChange: (e) => {
-            if (e.target.value.trim() === "") setParam("search", "")
-        },
-    })}
+                        onChange: (e) => {
+                            if (e.target.value.trim() === "") setParam("search", "")
+                        },
+                    })}
                     placeholder="חפש לפי שם, תיאור או רכיבים"
+                    // השרת מחזיר שגיאה על חיפוש ארוך מ-100 תווים
+                    maxLength={100}
                 />
                 {/* ברירת המחדל של MyButton היא "button" - צריך submit כדי שהטופס יישלח */}
                 <MyButton text="חפש" type="submit" />
             </form>
 
             {/* קטגוריות - מערך מהשרת, אפשר map ישירות */}
+            {/* aria-label - לרשימות אין תווית גלויה, קורא מסך צריך לדעת מה כל אחת מסננת */}
             <select
+                aria-label="קטגוריה"
                 value={searchParams.get("categoryId") ?? ""}
                 onChange={(e) => setParam("categoryId", e.target.value)}
             >
@@ -68,6 +82,7 @@ const RecipeFilters = ({ showVisibility = false }: { showVisibility?: boolean })
 
             {/* רמת קושי - Record הוא אובייקט, Object.entries הופך אותו למערך [מפתח, ערך] */}
             <select
+                aria-label="רמת קושי"
                 value={searchParams.get("difficulty") ?? ""}
                 onChange={(e) => setParam("difficulty", e.target.value)}
             >
@@ -77,8 +92,9 @@ const RecipeFilters = ({ showVisibility = false }: { showVisibility?: boolean })
                 ))}
             </select>
 
-            {/* כשרות - בדיוק כמו רמת קושי */}
+            {/* סוג תפריט - בדיוק כמו רמת קושי */}
             <select
+                aria-label="סוג תפריט"
                 value={searchParams.get("kosherType") ?? ""}
                 onChange={(e) => setParam("kosherType", e.target.value)}
             >
@@ -89,6 +105,7 @@ const RecipeFilters = ({ showVisibility = false }: { showVisibility?: boolean })
             </select>
             {/* זמן הכנה - מערך רגיל, אפשר map ישירות. שם הפרמטר חייב להיות כמו בשרת */}
             <select
+                aria-label="זמן הכנה"
                 value={searchParams.get("maxPrepTime") ?? ""}
                 onChange={(e) => setParam("maxPrepTime", e.target.value)}
             >
@@ -100,6 +117,7 @@ const RecipeFilters = ({ showVisibility = false }: { showVisibility?: boolean })
 
             {/* מיון - כמו רמת קושי. בלי בחירה השרת ממיין מהחדש לישן */}
             <select
+                aria-label="מיון"
                 value={searchParams.get("sort") ?? ""}
                 onChange={(e) => setParam("sort", e.target.value)}
             >
@@ -112,6 +130,7 @@ const RecipeFilters = ({ showVisibility = false }: { showVisibility?: boolean })
             {/* ציבורי/פרטי - ב-URL נשמר כמחרוזת "true"/"false", ההמרה ל-boolean בדף */}
             {showVisibility && (
                 <select
+                    aria-label="ציבורי או פרטי"
                     value={searchParams.get("isPublic") ?? ""}
                     onChange={(e) => setParam("isPublic", e.target.value)}
                 >
@@ -120,6 +139,9 @@ const RecipeFilters = ({ showVisibility = false }: { showVisibility?: boolean })
                     <option value="false">פרטיים</option>
                 </select>
             )}
+
+            {/* מוחק את כל הפרמטרים מה-URL - תיבת החיפוש מתרוקנת לבד דרך ה-useEffect */}
+            {hasFilters && <MyButton text="ניקוי סינון" onClick={() => setSearchParams(new URLSearchParams())} />}
         </>
     )
 }

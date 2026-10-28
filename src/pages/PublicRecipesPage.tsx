@@ -27,7 +27,8 @@ const PublicRecipesPage = () => {
         <p aria-live="polite">
             {isSearching && "מחפש..."}
             {/* רק אחרי שהתשובה הגיעה - אחרת "לא נמצאו" יהבהב בזמן החיפוש */}
-            {!isFetching && recipes?.length === 0 &&
+            {/* total ולא items - בעמוד שכבר לא קיים items ריק, אבל יש מתכונים בעמודים אחרים */}
+            {!isFetching && data?.pagination.total === 0 &&
                 (search ? `לא נמצאו מתכונים עבור "${search}"` : "לא נמצאו מתכונים")}
         </p>
 

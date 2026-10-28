@@ -19,6 +19,8 @@ const RecipeItem = ({ recipe }: { recipe: Recipe }) => {
             <p>
                 {recipe.category.name} · {recipe.prepTimeMinutes} דקות · {recipe.servings} מנות ·{" "}
                 {difficultyText[recipe.difficulty]} · {kosherText[recipe.kosherType]}
+                {/* ציבורי/פרטי מעניין רק את היוצרת - מתכון של אחרים תמיד ציבורי */}
+                {recipe.isOwner && (recipe.isPublic ? " · ציבורי" : " · פרטי")}
             </p>
             <p>מאת: {recipe.author.name}</p>
 

@@ -59,8 +59,8 @@ const schema = yup.object({
     .required("יש לבחור רמת קושי"),
   kosherType: yup
     .mixed<KosherType>()
-    .oneOf(["MEAT", "DAIRY", "PAREVE"], "יש לבחור כשרות")
-    .required("יש לבחור כשרות"),
+    .oneOf(["MEAT", "DAIRY", "PAREVE"], "יש לבחור סוג תפריט")
+    .required("יש לבחור סוג תפריט"),
   // לא חובה ביצירה - בלי סימון נשלח false
   isPublic: yup.boolean().default(false),
 })
@@ -93,7 +93,7 @@ const imageTypes = ["image/jpeg", "image/png", "image/webp"]
 const maxImageSize = 5 * 1024 * 1024 // 5MB
 
 const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmit }: RecipeFormProps) => {
-  const { data: categories } = useGetCategoriesQuery()
+  const { data: categories, isLoading: isLoadingCategories } = useGetCategoriesQuery()
 
   // input של קובץ לא עובד טוב עם yup - שומרים את הקובץ ב-state
   const [image, setImage] = useState<File | null>(null)
@@ -120,17 +120,18 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmi
     },
   });
 
-  const onImageChange = (file: File | undefined) => {
+  const onImageChange = (input: HTMLInputElement) => {
+    const file = input.files?.[0]
     setImageError("")
     if (!file) return setImage(null)
-    if (!imageTypes.includes(file.type)) {
+    // קובץ לא תקין - מנקים גם את ה-input, אחרת שם הקובץ נשאר מוצג כאילו נבחר
+    const reject = (message: string) => {
+      input.value = ""
       setImage(null)
-      return setImageError("אפשר להעלות רק JPG, PNG או WEBP")
+      setImageError(message)
     }
-    if (file.size > maxImageSize) {
-      setImage(null)
-      return setImageError("התמונה גדולה מדי (עד 5MB)")
-    }
+    if (!imageTypes.includes(file.type)) return reject("אפשר להעלות רק JPG, PNG או WEBP")
+    if (file.size > maxImageSize) return reject("התמונה גדולה מדי (עד 5MB)")
     setImage(file)
   }
 
@@ -145,12 +146,16 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmi
     }
   }
 
+  // מחכים לקטגוריות לפני שמציגים את הטופס: אם ה-select נוצר בלי האפשרויות,
+  // בעריכה הקטגוריה של המתכון לא תופיע כנבחרת גם כשהאפשרויות יגיעו
+  if (isLoadingCategories) return <p>טוען...</p>
+
   return (
     <form onSubmit={handleSubmit(submit)}>
       <h2>{title}</h2>
 
-      <FormField type="text" registration={register("title")} error={errors.title} label="שם המתכון" required instructions="בין 2 ל-100 תווים" />
-      <FormField type="text" registration={register("description")} error={errors.description} label="תיאור קצר" required instructions="בין 5 ל-500 תווים" />
+      <FormField type="text" registration={register("title")} error={errors.title} label="שם המתכון" required instructions="בין 2 ל-100 תווים" maxLength={100} />
+      <FormField type="text" registration={register("description")} error={errors.description} label="תיאור קצר" required instructions="בין 5 ל-500 תווים" maxLength={500} />
 
       {/* FormField תומך רק ב-input - select ו-textarea כתובים כאן באותו מבנה */}
       <div>
@@ -193,9 +198,9 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmi
       </div>
 
       <div>
-        <label htmlFor="recipe-kosher">כשרות<span aria-hidden="true"> *</span></label>
+        <label htmlFor="recipe-kosher">סוג תפריט<span aria-hidden="true"> *</span></label>
         <select id="recipe-kosher" {...register("kosherType")} aria-invalid={!!errors.kosherType}>
-          <option value="">בחירת כשרות</option>
+          <option value="">בחירת סוג תפריט</option>
           {Object.entries(kosherText).map(([key, text]) => (
             <option key={key} value={key}>{text}</option>
           ))}
@@ -209,7 +214,7 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmi
         <label htmlFor="recipe-image">{currentImageUrl ? "החלפת תמונה" : "תמונה (לא חובה)"}</label>
         {/* בעריכה - מציגים את התמונה הקיימת */}
         {currentImageUrl && !removeImage && <img src={currentImageUrl} alt="התמונה הנוכחית" width={150} />}
-        <input id="recipe-image" type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(e) => onImageChange(e.target.files?.[0])} />
+        <input id="recipe-image" type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(e) => onImageChange(e.target)} />
         <p>JPG, PNG או WEBP, עד 5MB</p>
         {imageError && <p role="alert">{imageError}</p>}
         {/* מחיקה רלוונטית רק כשיש תמונה ולא נבחרה חדשה במקומה */}

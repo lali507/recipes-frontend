@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import type { Category } from "../types/category";
 import type { errResponse } from "../types/eror";
 import { useDeleteCategoryMutation, useUpdateCategoryMutation } from "../store/api/categoryApi";
@@ -23,7 +23,9 @@ const CategoryItem = ({ category }: { category: Category }) => {
         setIsEditing(true)
     }
 
-    const save = async () => {
+    // form - כך גם Enter שומר
+    const save = async (e: FormEvent) => {
+        e.preventDefault()
         const trimmed = name.trim()
         // אותם חוקים כמו בשרת: 2-40 תווים
         if (trimmed.length < 2 || trimmed.length > 40) {
@@ -54,17 +56,21 @@ const CategoryItem = ({ category }: { category: Category }) => {
 
     if (isEditing)
         return <li>
-            <input value={name} onChange={(e) => setName(e.target.value)} autoFocus />
-            <MyButton text={isSaving ? "שומר..." : "שמירה"} onClick={save} disabled={isSaving} />
-            <MyButton text="ביטול" onClick={() => setIsEditing(false)} disabled={isSaving} />
-            {eror && <p>{eror}</p>}
+            <form onSubmit={save}>
+                <input value={name} onChange={(e) => setName(e.target.value)} aria-label="שם הקטגוריה" maxLength={40} autoFocus />
+                <MyButton text={isSaving ? "שומר..." : "שמירה"} type="submit" disabled={isSaving} />
+                <MyButton text="ביטול" onClick={() => setIsEditing(false)} disabled={isSaving} />
+                {eror && <p role="alert">{eror}</p>}
+            </form>
         </li>
 
     return <li>
         {category.name} ({count} מתכונים)
         <MyButton text="עריכה" onClick={startEdit} />
         <MyButton text={isDeleting ? "מוחק..." : "מחיקה"} onClick={remove} disabled={!canDelete || isDeleting} />
-        {eror && <p>{eror}</p>}
+        {/* כפתור מושבת בלי הסבר מבלבל - אומרים למה אי אפשר למחוק */}
+        {!canDelete && <small> (אי אפשר למחוק קטגוריה שיש בה מתכונים)</small>}
+        {eror && <p role="alert">{eror}</p>}
     </li>
 }
 
