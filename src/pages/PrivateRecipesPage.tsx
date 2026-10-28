@@ -5,6 +5,7 @@ import useRecipeFilters from "../hooks/useRecipeFilters"
 import RecipeFiltersBar from "../recipe/RecipeFilters"
 import RecipeList from "../recipe/show"
 import Paging from "../recipe/paging"
+import VisibilityBadge from "../recipe/VisibilityBadge"
 
 const PrivateRecipesPage = () => {
     const filters = useRecipeFilters()
@@ -22,6 +23,10 @@ const PrivateRecipesPage = () => {
     return (<>
         <h2>המתכונים שלי</h2>
         <Link to="/recipes/new">+ מתכון חדש</Link>
+        <p>
+            ליד כל מתכון מסומן מי יכול לראות אותו: <VisibilityBadge isPublic /> כל המשתמשים רואים אותו.{" "}
+            <VisibilityBadge isPublic={false} /> רק את רואה אותו. אפשר לשנות בעריכת המתכון.
+        </p>
         <RecipeFiltersBar showVisibility />
         <ShowPromise isLoading={isLoading} isError={isError} eror={error} />
 

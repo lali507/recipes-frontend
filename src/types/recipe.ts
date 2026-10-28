@@ -32,6 +32,10 @@ export interface Recipe extends Omit<RecipeInput, "categoryId"> {
   updatedAt: string;
 }
 
+export interface Author extends IdName {
+  recipeCount: number;
+}
+
 export interface FavoriteRecipe extends Recipe {
   favoritedAt: string;
 }
@@ -41,6 +45,7 @@ export type RecipeSort = "newest" | "oldest" | "prepTime" | "title";
 export interface RecipeFilters {
   search?: string;
   categoryId?: number;
+  authorId?: number;
   difficulty?: Difficulty;
   kosherType?: KosherType;
   maxPrepTime?: number;

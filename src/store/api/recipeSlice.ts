@@ -1,4 +1,4 @@
-import type { Recipe, RecipeFilters, RecipeInput } from "../../types/recipe"
+import type { Author, Recipe, RecipeFilters, RecipeInput } from "../../types/recipe"
 import type { PaginatedResponse } from "../../types/paging"
 import { apiSlice } from "./apiSlice"
 
@@ -15,6 +15,11 @@ export const recipeApi = apiSlice.injectEndpoints({
       providesTags: ["Recipe"],
     }),
 
+    getAuthors: builder.query<Author[], void>({
+      query: () => "/recipes/authors",
+      providesTags: ["Recipe"],
+    }),
+
     getRecipe: builder.query<Recipe, number>({
       query: (id) => `/recipes/${id}`,
       providesTags: ["Recipe"],
@@ -22,17 +27,17 @@ export const recipeApi = apiSlice.injectEndpoints({
 
     addRecipe: builder.mutation<Recipe, RecipeInput>({
       query: (body) => ({ url: "/recipes", method: "POST", body }),
-      invalidatesTags: ["Recipe"],
+      invalidatesTags: ["Recipe", "Category"],
     }),
 
     updateRecipe: builder.mutation<Recipe, RecipeInput & { id: number; isPublic: boolean }>({
       query: ({ id, ...body }) => ({ url: `/recipes/${id}`, method: "PUT", body }),
-      invalidatesTags: ["Recipe", "Favorite"],
+      invalidatesTags: ["Recipe", "Favorite", "Category"],
     }),
 
     deleteRecipe: builder.mutation<void, number>({
       query: (id) => ({ url: `/recipes/${id}`, method: "DELETE" }),
-      invalidatesTags: ["Recipe", "Favorite"],
+      invalidatesTags: ["Recipe", "Favorite", "Category"],
     }),
 
     uploadRecipeImage: builder.mutation<Recipe, { id: number; image: File }>({
@@ -54,6 +59,7 @@ export const recipeApi = apiSlice.injectEndpoints({
 export const {
   useGetRecipesQuery,
   useGetMyRecipesQuery,
+  useGetAuthorsQuery,
   useGetRecipeQuery,
   useAddRecipeMutation,
   useUpdateRecipeMutation,

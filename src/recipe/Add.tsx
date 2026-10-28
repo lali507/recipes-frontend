@@ -4,11 +4,14 @@ import { useAddRecipeMutation, useUploadRecipeImageMutation } from "../store/api
 import type { errResponse } from "../types/eror";
 import ShowPromise from "../components/showPromise";
 import RecipeForm, { type RecipeFormResult } from "./RecipeForm";
+import { useAppDispatch } from "../store/hook"
+import { showToast } from "../store/state/toastSlice"
 
 export default function AddRecipe() {
   const [addFn, { isError, error, isLoading }] = useAddRecipeMutation()
   const [uploadImageFn] = useUploadRecipeImageMutation()
   const nav = useNavigate()
+  const dispatch = useAppDispatch()
   const [savedWithoutImageId, setSavedWithoutImageId] = useState<number | null>(null)
 
   const onSubmit = async ({ data, image }: RecipeFormResult) => {
@@ -24,6 +27,7 @@ export default function AddRecipe() {
       }
     }
 
+    dispatch(showToast("המתכון נוסף בהצלחה"))
     nav(`/recipes/${res.id}`)
   }
 

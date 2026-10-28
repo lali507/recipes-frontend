@@ -1,5 +1,7 @@
 import { useState } from "react"
 import { useAddFavoriteMutation, useRemoveFavoriteMutation } from "../store/api/favoriteApi"
+import { useAppDispatch } from "../store/hook"
+import { showToast } from "../store/state/toastSlice"
 
 interface FavoriteButtonProps {
   recipeId: number
@@ -11,12 +13,19 @@ const FavoriteButton = ({ recipeId, isFavorite }: FavoriteButtonProps) => {
   const [removeFn, { isLoading: isRemoving }] = useRemoveFavoriteMutation()
   const isBusy = isAdding || isRemoving
   const [failed, setFailed] = useState(false)
+  const dispatch = useAppDispatch()
 
   const toggle = async () => {
     setFailed(false)
     try {
-      if (isFavorite) await removeFn(recipeId).unwrap()
-      else await addFn(recipeId).unwrap()
+      if (isFavorite) {
+        await removeFn(recipeId).unwrap()
+        dispatch(showToast("המתכון הוסר מהמועדפים"))
+      }
+      else {
+        await addFn(recipeId).unwrap()
+        dispatch(showToast("המתכון נוסף למועדפים ❤️"))
+      }
     }
     catch {
       setFailed(true)

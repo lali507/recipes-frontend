@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
@@ -73,6 +73,7 @@ interface RecipeFormProps {
   submitText: string
   defaultValues?: Partial<RecipeFormInputs>
   currentImageUrl?: string | null
+  showVisibility?: boolean
   onSubmit: (result: RecipeFormResult) => Promise<void>
 }
 
@@ -82,12 +83,13 @@ const kosherText: Record<KosherType, string> = { MEAT: "בשרי", DAIRY: "חל�
 const imageTypes = ["image/jpeg", "image/png", "image/webp"]
 const maxImageSize = 5 * 1024 * 1024
 
-const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmit }: RecipeFormProps) => {
+const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, showVisibility = true, onSubmit }: RecipeFormProps) => {
   const { data: categories, isLoading: isLoadingCategories } = useGetCategoriesQuery()
 
   const [image, setImage] = useState<File | null>(null)
   const [imageError, setImageError] = useState("")
   const [removeImage, setRemoveImage] = useState(false)
+  const imageInput = useRef<HTMLInputElement>(null)
 
   const {
     register,
@@ -188,12 +190,17 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, onSubmi
         {errors.kosherType && <p role="alert">{errors.kosherType.message}</p>}
       </div>
 
-      <FormField type="checkbox" registration={register("isPublic")} error={errors.isPublic} label="מתכון ציבורי (כולם יוכלו לראות)" />
+      {showVisibility && <FormField type="checkbox" registration={register("isPublic")} error={errors.isPublic} label="מתכון ציבורי (כולם יוכלו לראות)" />}
 
       <div>
         <label htmlFor="recipe-image">{currentImageUrl ? "החלפת תמונה" : "תמונה (לא חובה)"}</label>
         {currentImageUrl && !removeImage && <img src={currentImageUrl} alt="התמונה הנוכחית" width={150} />}
-        <input id="recipe-image" type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(e) => onImageChange(e.target)} />
+        <input id="recipe-image" ref={imageInput} type="file" accept=".jpg,.jpeg,.png,.webp" hidden onChange={(e) => onImageChange(e.target)} />
+        <MyButton
+          text={image ? "החלפת הקובץ שנבחר" : imageError ? "ניסיון חוזר - בחירת תמונה אחרת" : "בחירת תמונה"}
+          onClick={() => imageInput.current?.click()}
+        />
+        {image && <span> נבחר: {image.name}</span>}
         <p>JPG, PNG או WEBP, עד 5MB</p>
         {imageError && <p role="alert">{imageError}</p>}
         {currentImageUrl && !image && (

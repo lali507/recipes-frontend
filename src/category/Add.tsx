@@ -2,10 +2,13 @@ import { useState, type FormEvent } from "react"
 import MyButton from "../components/form/Button"
 import { useAddCategoryMutation } from "../store/api/categoryApi"
 import type { errResponse } from "../types/eror"
+import { useAppDispatch } from "../store/hook"
+import { showToast } from "../store/state/toastSlice"
 
 
 const AddCategory = ()=>{
     const [addFn, { isLoading: isSaving }]=useAddCategoryMutation()
+    const dispatch = useAppDispatch()
     const [name,setName] = useState("")
     const [eror,setEror] = useState("")
 
@@ -20,6 +23,7 @@ const AddCategory = ()=>{
      try{
      await addFn({name: trimmed}).unwrap()
      setName("")
+     dispatch(showToast(`הקטגוריה "${trimmed}" נוספה בהצלחה`))
      }
      catch(e){
         const err = (e as { data?: errResponse }).data?.error

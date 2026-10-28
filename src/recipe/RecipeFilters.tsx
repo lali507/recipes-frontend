@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { useSearchParams } from "react-router"
 import { useForm } from "react-hook-form"
 import { useGetCategoriesQuery } from "../store/api/categoryApi"
+import { useGetAuthorsQuery } from "../store/api/recipeSlice"
 import type { Difficulty, KosherType, RecipeSort } from "../types/recipe"
 import MyButton from "../components/form/Button"
 import FormField from "../components/form/formField"
@@ -12,8 +13,9 @@ const kosherText: Record<KosherType, string> = { MEAT: "בשרי", DAIRY: "חל�
 const sortText: Record<RecipeSort, string> = { newest: "מהחדש לישן", oldest: "מהישן לחדש", prepTime: "זמן הכנה", title: "לפי שם" }
 const timePrep: number[] = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
 
-const RecipeFilters = ({ showVisibility = false }: { showVisibility?: boolean }) => {
+const RecipeFilters = ({ showVisibility = false, showAuthor = false }: { showVisibility?: boolean; showAuthor?: boolean }) => {
     const { data: categories } = useGetCategoriesQuery()
+    const { data: authors } = useGetAuthorsQuery(undefined, { skip: !showAuthor })
     const [searchParams, setSearchParams] = useSearchParams()
 
     const searchParam = searchParams.get("search") ?? ""
@@ -64,6 +66,19 @@ const RecipeFilters = ({ showVisibility = false }: { showVisibility?: boolean })
                     <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
             </select>
+
+            {showAuthor && (
+                <select
+                    aria-label="מפרסם"
+                    value={searchParams.get("authorId") ?? ""}
+                    onChange={(e) => setParam("authorId", e.target.value)}
+                >
+                    <option value="">כל המפרסמים</option>
+                    {authors?.map((a) => (
+                        <option key={a.id} value={a.id}>{a.name} ({a.recipeCount})</option>
+                    ))}
+                </select>
+            )}
 
             <select
                 aria-label="רמת קושי"

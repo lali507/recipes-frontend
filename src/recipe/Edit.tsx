@@ -5,12 +5,15 @@ import type { Recipe } from "../types/recipe";
 import type { errResponse } from "../types/eror";
 import ShowPromise from "../components/showPromise";
 import RecipeForm, { type RecipeFormResult } from "./RecipeForm";
+import { useAppDispatch } from "../store/hook"
+import { showToast } from "../store/state/toastSlice"
 
 const EditRecipe = ({ recipe }: { recipe: Recipe }) => {
   const [updateFn, { isError, error, isLoading }] = useUpdateRecipeMutation()
   const [uploadImageFn] = useUploadRecipeImageMutation()
   const [deleteImageFn] = useDeleteRecipeImageMutation()
   const nav = useNavigate()
+  const dispatch = useAppDispatch()
   const location = useLocation()
   const [imageFailed, setImageFailed] = useState(false)
 
@@ -27,6 +30,7 @@ const EditRecipe = ({ recipe }: { recipe: Recipe }) => {
       return
     }
 
+    dispatch(showToast("השינויים נשמרו בהצלחה"))
     nav(`/recipes/${recipe.id}`, { state: location.state })
   }
 
@@ -36,9 +40,10 @@ const EditRecipe = ({ recipe }: { recipe: Recipe }) => {
     <ShowPromise isLoading={isLoading} isError={isError && !isValidationError} eror={error} />
     {imageFailed && <p role="alert">הפרטים נשמרו, אבל עדכון התמונה נכשל. אפשר לנסות שוב.</p>}
     <RecipeForm
-      title="עריכת מתכון"
+      title={recipe.isOwner ? "עריכת מתכון" : `עריכת מתכון של ${recipe.author.name} (הרשאת מנהל)`}
       submitText="שמירת שינויים"
       currentImageUrl={recipe.imageUrl}
+      showVisibility={recipe.isOwner}
       defaultValues={{
         title: recipe.title,
         description: recipe.description,

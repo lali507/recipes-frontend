@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router'
 import Header from "./components/Headr"
 import AuthGate from './components/AuthGate'
+import Toast from './components/Toast'
 
 function App() {
 
@@ -8,6 +9,7 @@ function App() {
     <AuthGate>
       <Header />
       <Outlet />
+      <Toast />
     </AuthGate>
   )
 }

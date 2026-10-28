@@ -15,7 +15,7 @@ const PublicRecipesPage = () => {
 
     return (<>
         <h2>כל המתכונים</h2>
-        <RecipeFiltersBar />
+        <RecipeFiltersBar showAuthor />
         <ShowPromise isLoading={isLoading} isError={isError} eror={error} />
 
         <p aria-live="polite">

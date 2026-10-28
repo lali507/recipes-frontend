@@ -1,4 +1,5 @@
 import type { Difficulty, KosherType, Recipe } from "../types/recipe";
+import VisibilityBadge from "./VisibilityBadge";
 
 const difficultyText: Record<Difficulty, string> = { EASY: "קל", MEDIUM: "בינוני", HARD: "קשה" }
 const kosherText: Record<KosherType, string> = { MEAT: "בשרי", DAIRY: "חלבי", PAREVE: "פרווה" }
@@ -15,7 +16,7 @@ const RecipeItem = ({ recipe }: { recipe: Recipe }) => {
             <p>
                 {recipe.category.name} · {recipe.prepTimeMinutes} דקות · {recipe.servings} מנות ·{" "}
                 {difficultyText[recipe.difficulty]} · {kosherText[recipe.kosherType]}
-                {recipe.isOwner && (recipe.isPublic ? " · ציבורי" : " · פרטי")}
+                {recipe.isOwner && <> · <VisibilityBadge isPublic={recipe.isPublic ?? false} /></>}
             </p>
             <p>מאת: {recipe.author.name}</p>
 

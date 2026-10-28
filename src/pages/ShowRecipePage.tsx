@@ -3,12 +3,15 @@ import { useDeleteRecipeMutation, useGetRecipeQuery } from "../store/api/recipeS
 import RecipeItem from "../recipe/recipeItem";
 import ShowPromise from "../components/showPromise";
 import FavoriteButton from "../recipe/FavoriteButton";
+import { useAppDispatch } from "../store/hook"
+import { showToast } from "../store/state/toastSlice"
 
 const ShowRecipePage = ()=>{
     const id = Number(useParams().id)
     const { data: recipe, isLoading, isError, error } = useGetRecipeQuery(id);
     const [deleteFn, { isLoading: isDeleting, isError: isDeleteError, error: deleteError }] = useDeleteRecipeMutation()
     const nav = useNavigate()
+    const dispatch = useAppDispatch()
 
     const location = useLocation()
     const from: string = location.state?.from ?? "/recipes"
@@ -20,6 +23,7 @@ const ShowRecipePage = ()=>{
         if (!window.confirm("למחוק את המתכון? אי אפשר לבטל את הפעולה.")) return
         try {
             await deleteFn(id).unwrap()
+            dispatch(showToast("המתכון נמחק בהצלחה"))
             nav(from)
         }
         catch {

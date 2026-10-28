@@ -19,6 +19,7 @@ const useRecipeFilters = () => {
     const filters: RecipeFilters = {
         search: searchParams.get("search") || undefined,
         categoryId: toPositiveInt(searchParams.get("categoryId")),
+        authorId: toPositiveInt(searchParams.get("authorId")),
         difficulty: oneOf(searchParams.get("difficulty"), difficulties),
         kosherType: oneOf(searchParams.get("kosherType"), kosherTypes),
         maxPrepTime: toPositiveInt(searchParams.get("maxPrepTime")),

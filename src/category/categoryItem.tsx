@@ -3,17 +3,22 @@ import type { Category } from "../types/category";
 import type { errResponse } from "../types/eror";
 import { useDeleteCategoryMutation, useUpdateCategoryMutation } from "../store/api/categoryApi";
 import MyButton from "../components/form/Button";
+import { useAppDispatch } from "../store/hook"
+import { showToast } from "../store/state/toastSlice"
 
 const CategoryItem = ({ category }: { category: Category }) => {
     const [isEditing, setIsEditing] = useState(false)
     const [name, setName] = useState(category.name)
     const [eror, setEror] = useState("")
+    const [showHelp, setShowHelp] = useState(false)
 
     const [updateFn, { isLoading: isSaving }] = useUpdateCategoryMutation()
     const [deleteFn, { isLoading: isDeleting }] = useDeleteCategoryMutation()
+    const dispatch = useAppDispatch()
 
     const count = category.totalRecipeCount ?? category.recipeCount
     const canDelete = category.totalRecipeCount === 0
+    const hiddenCount = (category.totalRecipeCount ?? 0) - category.recipeCount
 
     const startEdit = () => {
         setName(category.name)
@@ -31,6 +36,7 @@ const CategoryItem = ({ category }: { category: Category }) => {
         try {
             await updateFn({ id: category.id, name: trimmed }).unwrap()
             setIsEditing(false)
+            dispatch(showToast(`שם הקטגוריה עודכן ל"${trimmed}"`))
         }
         catch (e) {
             const err = (e as { data?: errResponse }).data?.error
@@ -42,6 +48,7 @@ const CategoryItem = ({ category }: { category: Category }) => {
         if (!window.confirm(`למחוק את הקטגוריה "${category.name}"?`)) return
         try {
             await deleteFn(category.id).unwrap()
+            dispatch(showToast(`הקטגוריה "${category.name}" נמחקה בהצלחה`))
         }
         catch (e) {
             const err = (e as { data?: errResponse }).data?.error
@@ -63,7 +70,25 @@ const CategoryItem = ({ category }: { category: Category }) => {
         {category.name} ({count} מתכונים)
         <MyButton text="עריכה" onClick={startEdit} />
         <MyButton text={isDeleting ? "מוחק..." : "מחיקה"} onClick={remove} disabled={!canDelete || isDeleting} />
-        {!canDelete && <small> (אי אפשר למחוק קטגוריה שיש בה מתכונים)</small>}
+        {!canDelete && <small>
+            {hiddenCount > 0
+                ? ` (${hiddenCount === 1 ? "יש בה מתכון פרטי אחד שלא מוצג לך" : `יש בה ${hiddenCount} מתכונים פרטיים שלא מוצגים לך`}) `
+                : " (אי אפשר למחוק קטגוריה שיש בה מתכונים)"}
+        </small>}
+        {hiddenCount > 0 && <button type="button" onClick={() => setShowHelp(!showHelp)} aria-expanded={showHelp}>
+            {showHelp ? "סגירת ההסבר" : "ℹ️ למה?"}
+        </button>}
+        {showHelp && <div role="note">
+            <p>
+                {hiddenCount === 1 ? "בקטגוריה יש מתכון פרטי אחד" : `בקטגוריה יש ${hiddenCount} מתכונים פרטיים`} של משתמשים אחרים.
+                מתכון פרטי גלוי רק למי שכתב אותו, ולכן גם מנהל לא רואה אותו ברשימות.
+            </p>
+            <p>
+                כל עוד יש בקטגוריה מתכונים, גם פרטיים, אי אפשר למחוק אותה, כדי שהמתכונים לא יישארו בלי קטגוריה.
+                הקטגוריה תהיה ניתנת למחיקה אחרי שהכותבים יעבירו את המתכונים לקטגוריה אחרת או ימחקו אותם.
+                בינתיים אפשר לשנות את שם הקטגוריה.
+            </p>
+        </div>}
         {eror && <p role="alert">{eror}</p>}
     </li>
 }
