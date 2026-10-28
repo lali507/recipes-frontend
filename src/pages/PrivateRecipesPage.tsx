@@ -1,5 +1,8 @@
 import { Link, useSearchParams } from "react-router"
 import ShowPromise from "../components/showPromise"
+import PageHeader from "../components/PageHeader"
+import EmptyState from "../components/EmptyState"
+import { buttonClass } from "../components/form/styles"
 import { useGetMyRecipesQuery } from "../store/api/recipeSlice"
 import useRecipeFilters from "../hooks/useRecipeFilters"
 import RecipeFiltersBar from "../recipe/RecipeFilters"
@@ -21,22 +24,24 @@ const PrivateRecipesPage = () => {
     const hasFilters = [...searchParams.keys()].some((key) => key !== "page")
 
     return (<>
-        <h2>המתכונים שלי</h2>
-        <Link to="/recipes/new">+ מתכון חדש</Link>
-        <p>
-            ליד כל מתכון מסומן מי יכול לראות אותו: <VisibilityBadge isPublic /> כל המשתמשים רואים אותו.{" "}
-            <VisibilityBadge isPublic={false} /> רק את רואה אותו. אפשר לשנות בעריכת המתכון.
-        </p>
+        <PageHeader icon="📒" title="המתכונים שלי"
+            subtitle={<span className="flex flex-wrap items-center gap-1.5">
+                ליד כל מתכון מסומן מי יכול לראות אותו: <VisibilityBadge isPublic /> כל המשתמשים,
+                <VisibilityBadge isPublic={false} /> רק את.
+            </span>}
+            actions={<Link to="/recipes/new" className={buttonClass("primary")}>+ מתכון חדש</Link>} />
         <RecipeFiltersBar showVisibility />
         <ShowPromise isLoading={isLoading} isError={isError} eror={error} />
 
-        <p aria-live="polite">
-            {isSearching && "מחפש..."}
+        <div aria-live="polite">
+            {isSearching && <p className="mb-4 text-center text-sm text-cocoa">מחפש...</p>}
             {!isFetching && data?.pagination.total === 0 &&
-                (search ? `לא נמצאו מתכונים עבור "${search}"`
-                    : hasFilters ? "לא נמצאו מתכונים שמתאימים לסינון"
-                    : <>עדיין לא הוספת מתכונים. <Link to="/recipes/new">להוספת המתכון הראשון</Link></>)}
-        </p>
+                (search ? <EmptyState icon="🔍" title={`לא נמצאו מתכונים עבור "${search}"`}>אפשר לנסות מילה אחרת</EmptyState>
+                    : hasFilters ? <EmptyState icon="🧐" title="לא נמצאו מתכונים שמתאימים לסינון">אפשר לשנות או לנקות את הסינון</EmptyState>
+                        : <EmptyState icon="📝" title="עדיין לא הוספת מתכונים">
+                            <Link to="/recipes/new" className={`${buttonClass("primary")} mt-3`}>להוספת המתכון הראשון</Link>
+                        </EmptyState>)}
+        </div>
 
         <RecipeList recipes={recipes} isSearching={isSearching} />
         {data && <Paging pagination={data.pagination} />}

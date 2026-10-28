@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
@@ -7,6 +7,8 @@ import type { Difficulty, KosherType } from "../types/recipe";
 import type { errResponse } from "../types/eror";
 import FormField from "../components/form/formField";
 import MyButton from "../components/form/Button";
+import Loader from "../components/Loader";
+import { errorClass, hintClass, inputClass, labelClass, selectClass } from "../components/form/styles";
 
 const schema = yup.object({
   title: yup
@@ -83,6 +85,17 @@ const kosherText: Record<KosherType, string> = { MEAT: "בשרי", DAIRY: "חל�
 const imageTypes = ["image/jpeg", "image/png", "image/webp"]
 const maxImageSize = 5 * 1024 * 1024
 
+const Section = ({ icon, title, children }: { icon: string; title: string; children: ReactNode }) => (
+  <fieldset className="space-y-5 border-t border-brand-100 pt-8 first:border-t-0 first:pt-0">
+    <legend className="mb-1 flex items-center gap-2 font-display text-lg font-bold text-ink">
+      <span aria-hidden="true" className="grid size-8 place-items-center rounded-xl bg-brand-50">{icon}</span>{title}
+    </legend>
+    {children}
+  </fieldset>
+)
+
+const Required = () => <span aria-hidden="true" className="text-brand-600"> *</span>
+
 const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, showVisibility = true, onSubmit }: RecipeFormProps) => {
   const { data: categories, isLoading: isLoadingCategories } = useGetCategoriesQuery()
 
@@ -90,6 +103,9 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, showVis
   const [imageError, setImageError] = useState("")
   const [removeImage, setRemoveImage] = useState(false)
   const imageInput = useRef<HTMLInputElement>(null)
+
+  const previewUrl = useMemo(() => (image ? URL.createObjectURL(image) : null), [image])
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }, [previewUrl])
 
   const {
     register,
@@ -133,85 +149,106 @@ const RecipeForm = ({ title, submitText, defaultValues, currentImageUrl, showVis
     }
   }
 
-  if (isLoadingCategories) return <p>טוען...</p>
+  if (isLoadingCategories) return <Loader />
+
+  const shownImage = previewUrl ?? (currentImageUrl && !removeImage ? currentImageUrl : null)
 
   return (
-    <form onSubmit={handleSubmit(submit)}>
-      <h2>{title}</h2>
+    <form onSubmit={handleSubmit(submit)} className="mx-auto max-w-3xl motion-safe:animate-fade-up">
+      <h1 className="mb-6 font-display text-3xl font-extrabold text-ink sm:text-4xl">{title}</h1>
 
-      <FormField type="text" registration={register("title")} error={errors.title} label="שם המתכון" required instructions="בין 2 ל-100 תווים" maxLength={100} />
-      <FormField type="text" registration={register("description")} error={errors.description} label="תיאור קצר" required instructions="בין 5 ל-500 תווים" maxLength={500} />
+      <div className="space-y-8 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-brand-100 sm:p-10">
+        <Section icon="📝" title="פרטי המתכון">
+          <FormField type="text" registration={register("title")} error={errors.title} label="שם המתכון" placeholder="למשל: עוגת שמרים לשבת" required instructions="בין 2 ל-100 תווים" maxLength={100} />
+          <FormField type="text" registration={register("description")} error={errors.description} label="תיאור קצר" placeholder="משפט או שניים על המנה" required instructions="בין 5 ל-500 תווים" maxLength={500} />
+          <div>
+            <label htmlFor="recipe-category" className={labelClass}>קטגוריה<Required /></label>
+            <select id="recipe-category" {...register("categoryId")} aria-invalid={!!errors.categoryId} className={selectClass}>
+              <option value="">בחירת קטגוריה</option>
+              {categories?.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            {errors.categoryId && <p role="alert" className={errorClass}>{errors.categoryId.message}</p>}
+          </div>
+        </Section>
 
-      <div>
-        <label htmlFor="recipe-category">קטגוריה<span aria-hidden="true"> *</span></label>
-        <select id="recipe-category" {...register("categoryId")} aria-invalid={!!errors.categoryId}>
-          <option value="">בחירת קטגוריה</option>
-          {categories?.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-        {errors.categoryId && <p role="alert">{errors.categoryId.message}</p>}
+        <Section icon="🧺" title="רכיבים והכנה">
+          <div>
+            <label htmlFor="recipe-ingredients" className={labelClass}>רכיבים<Required /></label>
+            <textarea id="recipe-ingredients" rows={6} {...register("ingredients")} placeholder={"2 כוסות קמח\n1 כפית מלח\n..."} aria-invalid={!!errors.ingredients} className={`${inputClass} leading-relaxed`} />
+            <p className={hintClass}>רכיב אחד בכל שורה</p>
+            {errors.ingredients && <p role="alert" className={errorClass}>{errors.ingredients.message}</p>}
+          </div>
+          <div>
+            <label htmlFor="recipe-instructions" className={labelClass}>הוראות הכנה<Required /></label>
+            <textarea id="recipe-instructions" rows={8} {...register("instructions")} placeholder={"מחממים תנור ל-180 מעלות\nמערבבים את כל הרכיבים\n..."} aria-invalid={!!errors.instructions} className={`${inputClass} leading-relaxed`} />
+            <p className={hintClass}>כל שלב בשורה נפרדת, הם יוצגו כרשימה ממוספרת</p>
+            {errors.instructions && <p role="alert" className={errorClass}>{errors.instructions.message}</p>}
+          </div>
+        </Section>
+
+        <Section icon="⚙️" title="פרטים נוספים">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <FormField type="number" registration={register("prepTimeMinutes")} error={errors.prepTimeMinutes} label="זמן הכנה (דקות)" required instructions="מספר שלם בין 1 ל-1440" />
+            <FormField type="number" registration={register("servings")} error={errors.servings} label="מספר מנות" required instructions="מספר שלם בין 1 ל-100" />
+            <div>
+              <label htmlFor="recipe-difficulty" className={labelClass}>רמת קושי<Required /></label>
+              <select id="recipe-difficulty" {...register("difficulty")} aria-invalid={!!errors.difficulty} className={selectClass}>
+                <option value="">בחירת רמת קושי</option>
+                {Object.entries(difficultyText).map(([key, text]) => (
+                  <option key={key} value={key}>{text}</option>
+                ))}
+              </select>
+              {errors.difficulty && <p role="alert" className={errorClass}>{errors.difficulty.message}</p>}
+            </div>
+            <div>
+              <label htmlFor="recipe-kosher" className={labelClass}>סוג תפריט<Required /></label>
+              <select id="recipe-kosher" {...register("kosherType")} aria-invalid={!!errors.kosherType} className={selectClass}>
+                <option value="">בחירת סוג תפריט</option>
+                {Object.entries(kosherText).map(([key, text]) => (
+                  <option key={key} value={key}>{text}</option>
+                ))}
+              </select>
+              {errors.kosherType && <p role="alert" className={errorClass}>{errors.kosherType.message}</p>}
+            </div>
+          </div>
+
+          {showVisibility && <FormField type="checkbox" registration={register("isPublic")} error={errors.isPublic}
+            label="🌐 מתכון ציבורי" instructions="כל המשתמשים יוכלו לראות אותו ב'מתכונים משותפים'. בלי סימון, רק את תראי אותו" />}
+        </Section>
+
+        <Section icon="📷" title={currentImageUrl ? "החלפת תמונה" : "תמונה (לא חובה)"}>
+          <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+            <div className="grid aspect-[4/3] w-full shrink-0 place-items-center overflow-hidden rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50/60 sm:w-56">
+              {shownImage
+                ? <img src={shownImage} alt={previewUrl ? "התמונה שנבחרה" : "התמונה הנוכחית"} className="size-full object-cover" />
+                : <span aria-hidden="true" className="text-5xl opacity-60">🖼️</span>}
+            </div>
+            <div className="space-y-3">
+              <input id="recipe-image" ref={imageInput} type="file" accept=".jpg,.jpeg,.png,.webp" hidden onChange={(e) => onImageChange(e.target)} />
+              <MyButton
+                variant="secondary"
+                text={image ? "החלפת הקובץ שנבחר" : imageError ? "ניסיון חוזר - בחירת תמונה אחרת" : "בחירת תמונה"}
+                onClick={() => imageInput.current?.click()}
+              />
+              {image && <p className="text-sm font-medium text-ink">נבחר: {image.name}</p>}
+              <p className={hintClass}>JPG, PNG או WEBP, עד 5MB</p>
+              {imageError && <p role="alert" className={errorClass}>⚠ {imageError}</p>}
+              {currentImageUrl && !image && (
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-ink">
+                  <input type="checkbox" checked={removeImage} onChange={(e) => setRemoveImage(e.target.checked)} className="size-4 accent-brand-600" />
+                  הסרת התמונה הנוכחית
+                </label>
+              )}
+            </div>
+          </div>
+        </Section>
+
+        <div className="border-t border-brand-100 pt-8">
+          <MyButton text={isSubmitting ? "שומר..." : submitText} type="submit" size="lg" disabled={isSubmitting} fullWidth />
+        </div>
       </div>
-
-      <div>
-        <label htmlFor="recipe-ingredients">רכיבים<span aria-hidden="true"> *</span></label>
-        <textarea id="recipe-ingredients" rows={6} {...register("ingredients")} placeholder="רכיב בכל שורה" aria-invalid={!!errors.ingredients} />
-        {errors.ingredients && <p role="alert">{errors.ingredients.message}</p>}
-      </div>
-
-      <div>
-        <label htmlFor="recipe-instructions">הוראות הכנה<span aria-hidden="true"> *</span></label>
-        <textarea id="recipe-instructions" rows={8} {...register("instructions")} aria-invalid={!!errors.instructions} />
-        {errors.instructions && <p role="alert">{errors.instructions.message}</p>}
-      </div>
-
-      <FormField type="number" registration={register("prepTimeMinutes")} error={errors.prepTimeMinutes} label="זמן הכנה (דקות)" required instructions="מספר שלם בין 1 ל-1440" />
-      <FormField type="number" registration={register("servings")} error={errors.servings} label="מספר מנות" required instructions="מספר שלם בין 1 ל-100" />
-
-      <div>
-        <label htmlFor="recipe-difficulty">רמת קושי<span aria-hidden="true"> *</span></label>
-        <select id="recipe-difficulty" {...register("difficulty")} aria-invalid={!!errors.difficulty}>
-          <option value="">בחירת רמת קושי</option>
-          {Object.entries(difficultyText).map(([key, text]) => (
-            <option key={key} value={key}>{text}</option>
-          ))}
-        </select>
-        {errors.difficulty && <p role="alert">{errors.difficulty.message}</p>}
-      </div>
-
-      <div>
-        <label htmlFor="recipe-kosher">סוג תפריט<span aria-hidden="true"> *</span></label>
-        <select id="recipe-kosher" {...register("kosherType")} aria-invalid={!!errors.kosherType}>
-          <option value="">בחירת סוג תפריט</option>
-          {Object.entries(kosherText).map(([key, text]) => (
-            <option key={key} value={key}>{text}</option>
-          ))}
-        </select>
-        {errors.kosherType && <p role="alert">{errors.kosherType.message}</p>}
-      </div>
-
-      {showVisibility && <FormField type="checkbox" registration={register("isPublic")} error={errors.isPublic} label="מתכון ציבורי (כולם יוכלו לראות)" />}
-
-      <div>
-        <label htmlFor="recipe-image">{currentImageUrl ? "החלפת תמונה" : "תמונה (לא חובה)"}</label>
-        {currentImageUrl && !removeImage && <img src={currentImageUrl} alt="התמונה הנוכחית" width={150} />}
-        <input id="recipe-image" ref={imageInput} type="file" accept=".jpg,.jpeg,.png,.webp" hidden onChange={(e) => onImageChange(e.target)} />
-        <MyButton
-          text={image ? "החלפת הקובץ שנבחר" : imageError ? "ניסיון חוזר - בחירת תמונה אחרת" : "בחירת תמונה"}
-          onClick={() => imageInput.current?.click()}
-        />
-        {image && <span> נבחר: {image.name}</span>}
-        <p>JPG, PNG או WEBP, עד 5MB</p>
-        {imageError && <p role="alert">{imageError}</p>}
-        {currentImageUrl && !image && (
-          <label>
-            <input type="checkbox" checked={removeImage} onChange={(e) => setRemoveImage(e.target.checked)} />
-            הסרת התמונה הנוכחית
-          </label>
-        )}
-      </div>
-
-      <MyButton text={isSubmitting ? "שומר..." : submitText} type="submit" disabled={isSubmitting} />
     </form>
   )
 }

@@ -6,6 +6,7 @@ import { useGetAuthorsQuery } from "../store/api/recipeSlice"
 import type { Difficulty, KosherType, RecipeSort } from "../types/recipe"
 import MyButton from "../components/form/Button"
 import FormField from "../components/form/formField"
+import { selectClass } from "../components/form/styles"
 
 
 const difficultyText: Record<Difficulty, string> = { EASY: "קל", MEDIUM: "בינוני", HARD: "קשה" }
@@ -37,106 +38,105 @@ const RecipeFilters = ({ showVisibility = false, showAuthor = false }: { showVis
         setSearchParams(next)
     }
 
+    const filterClass = (key: string) =>
+        `${selectClass} py-2.5 text-sm ${searchParams.get(key) ? "border-brand-400 bg-brand-50 font-semibold text-brand-800" : ""}`
+
     const onSearch = (data: { search: string }) => setParam("search", data.search.trim())
 
     return (
-        <>
-            <form onSubmit={handleSubmit(onSearch)}>
-                <FormField
-                    label="חיפוש"
-                    type="text"
-                    registration={register("search", {
-                        onChange: (e) => {
-                            if (e.target.value.trim() === "") setParam("search", "")
-                        },
-                    })}
-                    placeholder="חפש לפי שם, תיאור או רכיבים"
-                    maxLength={100}
-                />
-                <MyButton text="חפש" type="submit" />
+        <section aria-label="חיפוש וסינון" className="mb-8 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-brand-100 sm:p-5">
+            <form onSubmit={handleSubmit(onSearch)} className="flex gap-2">
+                <div className="flex-1">
+                    <FormField
+                        label="חיפוש"
+                        hideLabel
+                        type="text"
+                        registration={register("search", {
+                            onChange: (e) => {
+                                if (e.target.value.trim() === "") setParam("search", "")
+                            },
+                        })}
+                        placeholder="🔍  חפשי לפי שם, תיאור או רכיבים"
+                        maxLength={100}
+                    />
+                </div>
+                <MyButton text="חיפוש" type="submit" />
             </form>
 
-            <select
-                aria-label="קטגוריה"
-                value={searchParams.get("categoryId") ?? ""}
-                onChange={(e) => setParam("categoryId", e.target.value)}
-            >
-                <option value="">כל הקטגוריות</option>
-                {categories?.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-            </select>
-
-            {showAuthor && (
-                <select
-                    aria-label="מפרסם"
-                    value={searchParams.get("authorId") ?? ""}
-                    onChange={(e) => setParam("authorId", e.target.value)}
-                >
-                    <option value="">כל המפרסמים</option>
-                    {authors?.map((a) => (
-                        <option key={a.id} value={a.id}>{a.name} ({a.recipeCount})</option>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+                <select aria-label="קטגוריה" className={filterClass("categoryId")}
+                    value={searchParams.get("categoryId") ?? ""}
+                    onChange={(e) => setParam("categoryId", e.target.value)}>
+                    <option value="">כל הקטגוריות</option>
+                    {categories?.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
                 </select>
-            )}
 
-            <select
-                aria-label="רמת קושי"
-                value={searchParams.get("difficulty") ?? ""}
-                onChange={(e) => setParam("difficulty", e.target.value)}
-            >
-                <option value="">כל הרמות</option>
-                {Object.entries(difficultyText).map(([key, text]) => (
-                    <option key={key} value={key}>{text}</option>
-                ))}
-            </select>
+                {showAuthor && (
+                    <select aria-label="מפרסם" className={filterClass("authorId")}
+                        value={searchParams.get("authorId") ?? ""}
+                        onChange={(e) => setParam("authorId", e.target.value)}>
+                        <option value="">כל המפרסמים</option>
+                        {authors?.map((a) => (
+                            <option key={a.id} value={a.id}>{a.name} ({a.recipeCount})</option>
+                        ))}
+                    </select>
+                )}
 
-            <select
-                aria-label="סוג תפריט"
-                value={searchParams.get("kosherType") ?? ""}
-                onChange={(e) => setParam("kosherType", e.target.value)}
-            >
-                <option value="">כל סוגי התפריט</option>
-                {Object.entries(kosherText).map(([key, text]) => (
-                    <option key={key} value={key}>{text}</option>
-                ))}
-            </select>
-            <select
-                aria-label="זמן הכנה"
-                value={searchParams.get("maxPrepTime") ?? ""}
-                onChange={(e) => setParam("maxPrepTime", e.target.value)}
-            >
-                <option value="">כל זמן הכנה</option>
-                {timePrep.map((minutes) => (
-                    <option key={minutes} value={minutes}>עד {minutes} דקות</option>
-                ))}
-            </select>
-
-            <select
-                aria-label="מיון"
-                value={searchParams.get("sort") ?? ""}
-                onChange={(e) => setParam("sort", e.target.value)}
-            >
-                <option value="">מיון לפי: מהחדש לישן</option>
-                {Object.entries(sortText).map(([key, text]) => (
-                    <option key={key} value={key}>מיון לפי: {text}</option>
-                ))}
-            </select>
-
-            {showVisibility && (
-                <select
-                    aria-label="ציבורי או פרטי"
-                    value={searchParams.get("isPublic") ?? ""}
-                    onChange={(e) => setParam("isPublic", e.target.value)}
-                >
-                    <option value="">כל המתכונים שלי</option>
-                    <option value="true">ציבוריים</option>
-                    <option value="false">פרטיים</option>
+                <select aria-label="רמת קושי" className={filterClass("difficulty")}
+                    value={searchParams.get("difficulty") ?? ""}
+                    onChange={(e) => setParam("difficulty", e.target.value)}>
+                    <option value="">כל הרמות</option>
+                    {Object.entries(difficultyText).map(([key, text]) => (
+                        <option key={key} value={key}>{text}</option>
+                    ))}
                 </select>
-            )}
 
-            {hasFilters && <MyButton text="ניקוי סינון" onClick={() => setSearchParams(new URLSearchParams())} />}
-        </>
+                <select aria-label="סוג תפריט" className={filterClass("kosherType")}
+                    value={searchParams.get("kosherType") ?? ""}
+                    onChange={(e) => setParam("kosherType", e.target.value)}>
+                    <option value="">כל סוגי התפריט</option>
+                    {Object.entries(kosherText).map(([key, text]) => (
+                        <option key={key} value={key}>{text}</option>
+                    ))}
+                </select>
+
+                <select aria-label="זמן הכנה" className={filterClass("maxPrepTime")}
+                    value={searchParams.get("maxPrepTime") ?? ""}
+                    onChange={(e) => setParam("maxPrepTime", e.target.value)}>
+                    <option value="">כל זמן הכנה</option>
+                    {timePrep.map((minutes) => (
+                        <option key={minutes} value={minutes}>עד {minutes} דקות</option>
+                    ))}
+                </select>
+
+                <select aria-label="מיון" className={filterClass("sort")}
+                    value={searchParams.get("sort") ?? ""}
+                    onChange={(e) => setParam("sort", e.target.value)}>
+                    <option value="">מיון לפי: מהחדש לישן</option>
+                    {Object.entries(sortText).map(([key, text]) => (
+                        <option key={key} value={key}>מיון לפי: {text}</option>
+                    ))}
+                </select>
+
+                {showVisibility && (
+                    <select aria-label="ציבורי או פרטי" className={filterClass("isPublic")}
+                        value={searchParams.get("isPublic") ?? ""}
+                        onChange={(e) => setParam("isPublic", e.target.value)}>
+                        <option value="">כל המתכונים שלי</option>
+                        <option value="true">ציבוריים</option>
+                        <option value="false">פרטיים</option>
+                    </select>
+                )}
+            </div>
+
+            {hasFilters && (
+                <div className="mt-3 flex justify-end">
+                    <MyButton text="✕ ניקוי סינון" variant="ghost" size="sm" onClick={() => setSearchParams(new URLSearchParams())} />
+                </div>
+            )}
+        </section>
     )
 }
 export default RecipeFilters

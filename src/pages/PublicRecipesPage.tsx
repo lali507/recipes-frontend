@@ -1,5 +1,8 @@
 import { Link } from "react-router"
 import ShowPromise from "../components/showPromise"
+import PageHeader from "../components/PageHeader"
+import EmptyState from "../components/EmptyState"
+import Alert from "../components/Alert"
 import { useGetRecipesQuery } from "../store/api/recipeSlice"
 import useRecipeFilters from "../hooks/useRecipeFilters"
 import RecipeFiltersBar from "../recipe/RecipeFilters"
@@ -15,23 +18,24 @@ const PublicRecipesPage = () => {
     const search = filters.search
 
     return (<>
-        <h2>המתכונים המשותפים</h2>
-        <p style={{
-            maxWidth: 640, margin: "0 auto 16px", padding: "12px 16px",
-            borderRadius: 12, background: "#FFF4EC", border: "1px solid #F3D9C8",
-        }}>
-            🌐 כאן מופיעים המתכונים שהמשתמשים בחרו לשתף עם כולם.
-            {" "}🔒 מתכונים פרטיים, גם שלך, לא מוצגים ברשימה זו.
-            {" "}<Link to="/my-recipes">לכל המתכונים שלי, כולל הפרטיים</Link>
-        </p>
+        <PageHeader icon="🍲" title="המתכונים המשותפים"
+            subtitle={data ? `${data.pagination.total} מתכונים שהמשתמשים בחרו לשתף עם כולם` : "מתכונים שהמשתמשים בחרו לשתף עם כולם"} />
+        <div className="mb-6">
+            <Alert tone="info" icon="🔒">
+                מתכונים פרטיים, גם שלך, לא מוצגים ברשימה זו.{" "}
+                <Link to="/my-recipes" className="font-semibold text-brand-700 underline decoration-brand-300 underline-offset-4 hover:text-brand-800">לכל המתכונים שלי, כולל הפרטיים</Link>
+            </Alert>
+        </div>
         <RecipeFiltersBar showAuthor />
         <ShowPromise isLoading={isLoading} isError={isError} eror={error} />
 
-        <p aria-live="polite">
-            {isSearching && "מחפש..."}
+        <div aria-live="polite">
+            {isSearching && <p className="mb-4 text-center text-sm text-cocoa">מחפש...</p>}
             {!isFetching && data?.pagination.total === 0 &&
-                (search ? `לא נמצאו מתכונים עבור "${search}"` : "לא נמצאו מתכונים")}
-        </p>
+                (search
+                    ? <EmptyState icon="🔍" title={`לא נמצאו מתכונים עבור "${search}"`}>אפשר לנסות מילה אחרת או לנקות את הסינון</EmptyState>
+                    : <EmptyState icon="🍽️" title="לא נמצאו מתכונים">אפשר לשנות את הסינון</EmptyState>)}
+        </div>
 
         <RecipeList recipes={recipes} isSearching={isSearching} />
         {data && <Paging pagination={data.pagination} />}

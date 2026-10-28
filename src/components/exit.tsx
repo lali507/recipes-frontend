@@ -5,28 +5,26 @@ import { logout } from "../store/state/userSlice";
 import { apiSlice } from "../store/api/apiSlice";
 import MyButton from "./form/Button";
 
- const Exit=()=>
-{
+const Exit = () => {
     const dispatch = useAppDispatch()
     const nav = useNavigate()
     const { pathname } = useLocation()
     const [leaving, setLeaving] = useState(false)
 
-    useEffect(()=>{
+    useEffect(() => {
         if (!leaving || pathname !== "/") return
         localStorage.removeItem("token")
         dispatch(logout())
         dispatch(apiSlice.util.resetApiState())
-    },[leaving, pathname, dispatch])
+    }, [leaving, pathname, dispatch])
 
-    const delToken=()=>{
+    const delToken = () => {
         setLeaving(true)
         nav("/")
     }
 
-    return(
-        <MyButton text="התנתקות" type="button" onClick={()=>delToken()}
-        ></MyButton>
+    return (
+        <MyButton text="התנתקות" type="button" variant="ghost" size="sm" onClick={() => delToken()} />
     )
 }
 

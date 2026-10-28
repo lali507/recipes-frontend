@@ -3,12 +3,14 @@ import { Link, useNavigate } from "react-router"
 import { useAddRecipeMutation, useUploadRecipeImageMutation } from "../store/api/recipeSlice";
 import type { errResponse } from "../types/eror";
 import ShowPromise from "../components/showPromise";
+import Alert from "../components/Alert";
+import { buttonClass } from "../components/form/styles";
 import RecipeForm, { type RecipeFormResult } from "./RecipeForm";
 import { useAppDispatch } from "../store/hook"
 import { showToast } from "../store/state/toastSlice"
 
 export default function AddRecipe() {
-  const [addFn, { isError, error, isLoading }] = useAddRecipeMutation()
+  const [addFn, { isError, error }] = useAddRecipeMutation()
   const [uploadImageFn] = useUploadRecipeImageMutation()
   const nav = useNavigate()
   const dispatch = useAppDispatch()
@@ -35,17 +37,18 @@ export default function AddRecipe() {
 
   if (savedWithoutImageId) {
     return (
-      <div role="alert">
-        <p>המתכון נשמר, אבל העלאת התמונה נכשלה.</p>
-        <Link to={`/recipes/${savedWithoutImageId}/edit`}>לנסות להעלות שוב מעריכת המתכון</Link>
-        {" · "}
-        <Link to={`/recipes/${savedWithoutImageId}`}>לצפייה במתכון</Link>
+      <div className="mx-auto max-w-xl space-y-5 py-10 text-center">
+        <Alert tone="warning">המתכון נשמר, אבל העלאת התמונה נכשלה.</Alert>
+        <div className="flex flex-wrap justify-center gap-3">
+          <Link to={`/recipes/${savedWithoutImageId}/edit`} className={buttonClass("primary")}>לנסות להעלות שוב מעריכת המתכון</Link>
+          <Link to={`/recipes/${savedWithoutImageId}`} className={buttonClass("secondary")}>לצפייה במתכון</Link>
+        </div>
       </div>
     )
   }
 
   return (<>
-    <ShowPromise isLoading={isLoading} isError={isError && !isValidationError} eror={error} />
+    <div className="mx-auto mb-4 max-w-3xl"><ShowPromise isLoading={false} isError={isError && !isValidationError} eror={error} /></div>
     <RecipeForm title="הוספת מתכון" submitText="שמירת מתכון" onSubmit={onSubmit} />
   </>)
 }

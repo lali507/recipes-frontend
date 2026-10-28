@@ -13,17 +13,13 @@ const Toast = () => {
     }, [id, message, dispatch])
 
     return (
-        <div role="status" aria-live="polite" style={{ position: "fixed", bottom: 24, insetInlineStart: 24, zIndex: 1000 }}>
+        <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-6 z-50 flex justify-center sm:inset-x-auto sm:start-6">
             {message && (
-                <div style={{
-                    display: "flex", alignItems: "center", gap: 12,
-                    padding: "12px 20px", borderRadius: 12,
-                    background: "#1E6B34", color: "#fff", fontWeight: 600,
-                    boxShadow: "0 6px 20px rgba(0, 0, 0, 0.2)",
-                }}>
-                    <span>✓ {message}</span>
+                <div key={id} className="pointer-events-auto flex items-center gap-3 rounded-2xl bg-ink/95 py-3 ps-3 pe-4 text-white shadow-2xl shadow-ink/30 ring-1 ring-white/10 backdrop-blur motion-safe:animate-toast-in">
+                    <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full bg-emerald-500 text-sm font-bold">✓</span>
+                    <span className="font-medium">{message}</span>
                     <button type="button" onClick={() => dispatch(hideToast())} aria-label="סגירת ההודעה"
-                        style={{ background: "none", border: "none", color: "#fff", fontSize: 18, cursor: "pointer" }}>
+                        className="ms-2 grid size-7 cursor-pointer place-items-center rounded-full text-white/60 transition hover:bg-white/10 hover:text-white">
                         ×
                     </button>
                 </div>

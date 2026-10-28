@@ -3,6 +3,8 @@ import type { Category } from "../types/category";
 import type { errResponse } from "../types/eror";
 import { useDeleteCategoryMutation, useUpdateCategoryMutation } from "../store/api/categoryApi";
 import MyButton from "../components/form/Button";
+import Alert from "../components/Alert";
+import { errorClass, inputClass } from "../components/form/styles";
 import { useAppDispatch } from "../store/hook"
 import { showToast } from "../store/state/toastSlice"
 
@@ -57,39 +59,59 @@ const CategoryItem = ({ category }: { category: Category }) => {
     }
 
     if (isEditing)
-        return <li>
-            <form onSubmit={save}>
-                <input value={name} onChange={(e) => setName(e.target.value)} aria-label="שם הקטגוריה" maxLength={40} autoFocus />
-                <MyButton text={isSaving ? "שומר..." : "שמירה"} type="submit" disabled={isSaving} />
-                <MyButton text="ביטול" onClick={() => setIsEditing(false)} disabled={isSaving} />
-                {eror && <p role="alert">{eror}</p>}
+        return <li className="bg-brand-50/50 px-6 py-4">
+            <form onSubmit={save} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <input value={name} onChange={(e) => setName(e.target.value)} aria-label="שם הקטגוריה" maxLength={40} autoFocus className={`${inputClass} py-2 sm:flex-1`} />
+                <div className="flex gap-2">
+                    <MyButton text={isSaving ? "שומר..." : "שמירה"} type="submit" size="sm" disabled={isSaving} />
+                    <MyButton text="ביטול" variant="ghost" size="sm" onClick={() => setIsEditing(false)} disabled={isSaving} />
+                </div>
             </form>
+            {eror && <p role="alert" className={errorClass}>⚠ {eror}</p>}
         </li>
 
-    return <li>
-        {category.name} ({count} מתכונים)
-        <MyButton text="עריכה" onClick={startEdit} />
-        <MyButton text={isDeleting ? "מוחק..." : "מחיקה"} onClick={remove} disabled={!canDelete || isDeleting} />
-        {!canDelete && <small>
-            {hiddenCount > 0
-                ? ` (${hiddenCount === 1 ? "יש בה מתכון פרטי אחד שלא מוצג לך" : `יש בה ${hiddenCount} מתכונים פרטיים שלא מוצגים לך`}) `
-                : " (אי אפשר למחוק קטגוריה שיש בה מתכונים)"}
-        </small>}
-        {hiddenCount > 0 && <button type="button" onClick={() => setShowHelp(!showHelp)} aria-expanded={showHelp}>
-            {showHelp ? "סגירת ההסבר" : "ℹ️ למה?"}
-        </button>}
-        {showHelp && <div role="note">
-            <p>
-                {hiddenCount === 1 ? "בקטגוריה יש מתכון פרטי אחד" : `בקטגוריה יש ${hiddenCount} מתכונים פרטיים`} של משתמשים אחרים.
-                מתכון פרטי גלוי רק למי שכתב אותו, ולכן גם מנהל לא רואה אותו ברשימות.
-            </p>
-            <p>
-                כל עוד יש בקטגוריה מתכונים, גם פרטיים, אי אפשר למחוק אותה, כדי שהמתכונים לא יישארו בלי קטגוריה.
-                הקטגוריה תהיה ניתנת למחיקה אחרי שהכותבים יעבירו את המתכונים לקטגוריה אחרת או ימחקו אותם.
-                בינתיים אפשר לשנות את שם הקטגוריה.
-            </p>
-        </div>}
-        {eror && <p role="alert">{eror}</p>}
+    return <li className="px-6 py-4 transition hover:bg-brand-50/40">
+        <div className="flex flex-wrap items-center gap-3">
+            <span className="font-semibold text-ink">{category.name}</span>
+            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700">{count} מתכונים</span>
+            <div className="ms-auto flex gap-2">
+                <MyButton text="✏️ עריכה" variant="secondary" size="sm" onClick={startEdit} />
+                <MyButton text={isDeleting ? "מוחק..." : "🗑 מחיקה"} variant="danger" size="sm" onClick={remove} disabled={!canDelete || isDeleting} />
+            </div>
+        </div>
+
+        {!canDelete && (
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-cocoa">
+                <span>
+                    {hiddenCount > 0
+                        ? (hiddenCount === 1 ? "יש בה מתכון פרטי אחד שלא מוצג לך" : `יש בה ${hiddenCount} מתכונים פרטיים שלא מוצגים לך`)
+                        : "אי אפשר למחוק קטגוריה שיש בה מתכונים"}
+                </span>
+                {hiddenCount > 0 && (
+                    <button type="button" onClick={() => setShowHelp(!showHelp)} aria-expanded={showHelp}
+                        className="cursor-pointer rounded-full bg-amber-50 px-2.5 py-0.5 font-semibold text-amber-800 ring-1 ring-amber-200 transition hover:bg-amber-100">
+                        {showHelp ? "סגירת ההסבר" : "ℹ️ למה?"}
+                    </button>
+                )}
+            </div>
+        )}
+
+        {showHelp && (
+            <div role="note" className="mt-3">
+                <Alert tone="warning">
+                    <p>
+                        {hiddenCount === 1 ? "בקטגוריה יש מתכון פרטי אחד" : `בקטגוריה יש ${hiddenCount} מתכונים פרטיים`} של משתמשים אחרים.
+                        מתכון פרטי גלוי רק למי שכתב אותו, ולכן גם מנהל לא רואה אותו ברשימות.
+                    </p>
+                    <p className="mt-2">
+                        כל עוד יש בקטגוריה מתכונים, גם פרטיים, אי אפשר למחוק אותה, כדי שהמתכונים לא יישארו בלי קטגוריה.
+                        הקטגוריה תהיה ניתנת למחיקה אחרי שהכותבים יעבירו את המתכונים לקטגוריה אחרת או ימחקו אותם.
+                        בינתיים אפשר לשנות את שם הקטגוריה.
+                    </p>
+                </Alert>
+            </div>
+        )}
+        {eror && <p role="alert" className={errorClass}>⚠ {eror}</p>}
     </li>
 }
 

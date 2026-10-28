@@ -1,5 +1,8 @@
 import { Link, useSearchParams } from "react-router"
 import ShowPromise from "../components/showPromise"
+import PageHeader from "../components/PageHeader"
+import EmptyState from "../components/EmptyState"
+import { buttonClass } from "../components/form/styles"
 import { useGetFavoritesQuery } from "../store/api/favoriteApi"
 import { toPositiveInt } from "../hooks/useRecipeFilters"
 import RecipeList from "../recipe/show"
@@ -14,14 +17,18 @@ const FavoritePage = () => {
     const isSearching = isFetching && !isLoading
 
     return (<>
-        <h2>המועדפים שלי</h2>
+        <PageHeader icon="❤️" title="המועדפים שלי"
+            subtitle={data && data.pagination.total > 0 ? `${data.pagination.total} מתכונים שאהבת, מהאחרון שנשמר` : "כל המתכונים שסימנת בלב"} />
         <ShowPromise isLoading={isLoading} isError={isError} eror={error} />
 
-        <p aria-live="polite">
-            {isSearching && "טוען..."}
+        <div aria-live="polite">
+            {isSearching && <p className="mb-4 text-center text-sm text-cocoa">טוען...</p>}
             {!isFetching && data?.pagination.total === 0 &&
-                <>עדיין אין מתכונים במועדפים. <Link to="/recipes">למתכונים המשותפים</Link></>}
-        </p>
+                <EmptyState icon="🤍" title="עדיין אין מתכונים במועדפים">
+                    <p>מצאת מתכון שאהבת? לחיצה על הלב תשמור אותו כאן.</p>
+                    <Link to="/recipes" className={`${buttonClass("primary")} mt-5`}>למתכונים המשותפים ←</Link>
+                </EmptyState>}
+        </div>
 
         <RecipeList recipes={recipes} isSearching={isSearching} />
         {data && <Paging pagination={data.pagination} />}
