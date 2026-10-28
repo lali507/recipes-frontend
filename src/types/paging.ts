@@ -5,7 +5,6 @@ export interface Pagination {
   totalPages: number;
 }
 
-// GET /recipes, GET /recipes/mine, GET /favorites
 export interface PaginatedResponse<T> {
   items: T[];
   pagination: Pagination;
